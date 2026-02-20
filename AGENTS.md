@@ -12,6 +12,7 @@ Ship Seven Shadow System as an open, composable, submodule-first governance syst
 <!-- RINSHARI-UI:START -->
 ## Design Preflight Requirement (Managed)
 For UI/UX change proposals, agents must do all of the following before implementation:
+0. Use Rinshari-UI doctrine source: `https://github.com/VontaJamal/rinshari-ui`
 1. Read `design/rinshari-ui/templates/design-preflight.md`.
 2. Audit animation/motion choices and note keep/change decisions.
 3. Read relevant files in `design/rinshari-ui/principles/`.
