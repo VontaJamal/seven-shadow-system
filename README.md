@@ -1,84 +1,85 @@
 # Seven Shadow System
 
-Seven Shadow System is an open-source AI review guard for open source repositories.
-It helps maintainers detect and govern AI-influenced review content in pull requests and comments.
+Seven Shadow System is an open-source AI review guard for maintainers.
 
-It is designed to be reused across repositories as a **git submodule**, similar to `rinshari-ui`.
+It helps you detect and govern AI-influenced review content in pull requests and comments.
 
-## Beginner Friendly
+## Start Here (Beginner)
 
-You do **not** need to know anything about Animate, advanced automation systems, or governance frameworks to use this.
+You do not need to know Animate, advanced governance systems, or complicated CI tooling to start.
 
-If you can:
-1. Clone a repo
-2. Run a script
-3. Open a pull request
+If you can run `npm` and edit a JSON file, you can use this.
 
-you can use Seven Shadow System.
-
-## Foundation-First
-
-This project is intentionally built as a foundation people can adopt as-is, fork, or extend into their own doctrine system.
-If it sparks a better variant, that is part of the mission.
-
-## Open Source
-
-- License: MIT (`LICENSE`)
-- Repo model: public, fork-friendly, policy-driven
-
-## Quick Start (Local)
+## 3-minute Local Check
 
 ```bash
 npm install
-npm run test
+npm test
 npm run guard:seven-shadow -- --event examples/pr_review_event.json --event-name pull_request_review
 ```
 
-What this does:
-1. Builds the guard
-2. Runs test coverage
-3. Runs one policy check against a sample GitHub event
+## What Decision You Get
 
-## What It Actually Guards
+Each run ends with one result:
 
-Seven Shadow System can enforce rules like:
-1. Block known bot-only reviewers
-2. Require AI disclosure tags (for example `[AI-ASSISTED]`)
-3. Score suspicious AI-pattern language
-4. Require a minimum number of human approvals
+1. `pass` - policy checks passed
+2. `warn` - policy concerns found but not blocking
+3. `block` - policy failed and should stop merge/release flow
 
-It outputs a clear decision:
-1. `pass`
-2. `warn`
-3. `block`
+## What It Can Enforce
 
-Note:
-If your policy requires human approvals (`minHumanApprovals > 0`), the guard needs `GITHUB_TOKEN` to verify approvals.
+- Block known bot-only review sources
+- Require disclosure tags (for example `[AI-ASSISTED]`)
+- Score suspicious AI-style language patterns
+- Require a minimum number of human approvals
+
+If your policy requires human approvals (`minHumanApprovals > 0`), the guard needs `GITHUB_TOKEN`.
 Without it, the run blocks by design.
 
-## Submodule-First Integration
+## Use It as a Submodule
 
-Use the installer script to wire Seven Shadow System into another repository:
+Seven Shadow System is built to be reused in other repositories.
+
+Wire it into a target repo:
 
 ```bash
 ./scripts/wire-submodule.sh /absolute/path/to/target-repo
 ```
 
-Default install path in target repos:
+By default it adds:
 
-- `governance/seven-shadow-system`
+- `governance/seven-shadow-system` (submodule)
+- `.seven-shadow/policy.json` (policy file)
+- `.github/workflows/seven-shadow-system.yml` (workflow)
 
-The script will:
+## Policy Basics
 
-1. Add Seven Shadow System as a git submodule.
-2. Create `.github/workflows/seven-shadow-system.yml` in the target repo.
-3. Seed `.seven-shadow/policy.json` in the target repo (if missing).
+Main policy file:
 
-After wiring, the target repo has a ready-to-edit policy file and a ready-to-run GitHub workflow.
+- `config/seven-shadow-system.policy.json`
+
+Consumer repos usually copy policy to:
+
+- `.seven-shadow/policy.json`
+
+## Foundation-First
+
+This project is intentionally a foundation.
+
+You can:
+
+- Use it as-is
+- Fork it and customize rules
+- Use it to spark your own governance system
 
 ## Core Files
 
 - Engine: `src/sevenShadowSystem.ts`
 - Tests: `test/sevenShadowSystem.test.ts`
-- Default policy: `config/seven-shadow-system.policy.json`
+- Submodule installer: `scripts/wire-submodule.sh`
 - Integration guide: `references/submodule-integration.md`
+
+## Open Source
+
+- License: MIT (`LICENSE`)
+- Public repo model for community extension and reuse
