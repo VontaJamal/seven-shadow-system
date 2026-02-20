@@ -52,6 +52,10 @@ It outputs a clear decision:
 2. `warn`
 3. `block`
 
+Note:
+If your policy requires human approvals (`minHumanApprovals > 0`), the guard needs `GITHUB_TOKEN` to verify approvals.
+Without it, the run blocks by design.
+
 ## Submodule-First Integration
 
 Use the installer script to wire Seven Shadow System into another repository:

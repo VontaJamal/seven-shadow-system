@@ -1,7 +1,10 @@
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { GuardPolicySchema, evaluateTargets, extractTargetsFromEvent } from "../src/sevenShadowSystem";
+import { GuardPolicySchema, evaluateTargets, extractTargetsFromEvent, runSevenShadowSystem } from "../src/sevenShadowSystem";
 
 const basePolicy = GuardPolicySchema.parse({
   version: 1,
@@ -112,4 +115,45 @@ test("evaluateTargets accepts scored review with disclosure tag", () => {
 
   const blocked = result.findings.filter((item) => item.severity === "block");
   assert.equal(blocked.length, 0);
+});
+
+test("runSevenShadowSystem blocks when human approvals cannot be verified", async () => {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "seven-shadow-system-test-"));
+  try {
+    const policyPath = path.join(tempDir, "policy.json");
+    const eventPath = path.join(tempDir, "event.json");
+
+    await fs.writeFile(
+      policyPath,
+      `${JSON.stringify({ ...basePolicy, minHumanApprovals: 1 }, null, 2)}\n`,
+      "utf8"
+    );
+
+    await fs.writeFile(
+      eventPath,
+      `${JSON.stringify({
+        repository: { full_name: "acme/repo" },
+        pull_request: {
+          number: 42,
+          body: "Test PR body",
+          user: { login: "repo-owner", type: "User" }
+        },
+        review: {
+          id: 9,
+          body: "Looks good to me",
+          user: { login: "human-reviewer", type: "User" }
+        }
+      })}\n`,
+      "utf8"
+    );
+
+    const code = await runSevenShadowSystem(
+      ["--policy", policyPath, "--event", eventPath, "--event-name", "pull_request_review"],
+      { ...process.env, GITHUB_TOKEN: "" }
+    );
+
+    assert.equal(code, 1);
+  } finally {
+    await fs.rm(tempDir, { recursive: true, force: true });
+  }
 });

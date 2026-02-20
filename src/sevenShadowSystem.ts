@@ -502,32 +502,40 @@ export async function runSevenShadowSystem(
     checked: false
   };
 
-  if (policy.minHumanApprovals > 0 && pullContext) {
-    const githubToken = env.GITHUB_TOKEN;
-    if (!githubToken) {
+  if (policy.minHumanApprovals > 0) {
+    if (!pullContext) {
       findings.push({
-        code: "GUARD_APPROVALS_SKIPPED",
-        severity: "warn",
-        message: "GITHUB_TOKEN unavailable; unable to verify human approvals"
+        code: "GUARD_PULL_CONTEXT_MISSING",
+        severity: "block",
+        message: "Unable to evaluate required human approvals because pull request context was missing"
       });
     } else {
-      const approvals = await fetchHumanApprovalCount(pullContext, githubToken, allowedAuthors);
-      humanApprovals = {
-        required: policy.minHumanApprovals,
-        actual: approvals,
-        checked: true
-      };
-
-      if (approvals < policy.minHumanApprovals) {
+      const githubToken = env.GITHUB_TOKEN;
+      if (!githubToken) {
         findings.push({
-          code: "GUARD_HUMAN_APPROVALS",
+          code: "GUARD_APPROVALS_UNVERIFIED",
           severity: "block",
-          message: `Human approvals ${approvals} below required ${policy.minHumanApprovals}`,
-          details: {
-            approvals,
-            required: policy.minHumanApprovals
-          }
+          message: "GITHUB_TOKEN unavailable; cannot verify required human approvals"
         });
+      } else {
+        const approvals = await fetchHumanApprovalCount(pullContext, githubToken, allowedAuthors);
+        humanApprovals = {
+          required: policy.minHumanApprovals,
+          actual: approvals,
+          checked: true
+        };
+
+        if (approvals < policy.minHumanApprovals) {
+          findings.push({
+            code: "GUARD_HUMAN_APPROVALS",
+            severity: "block",
+            message: `Human approvals ${approvals} below required ${policy.minHumanApprovals}`,
+            details: {
+              approvals,
+              required: policy.minHumanApprovals
+            }
+          });
+        }
       }
     }
   }
