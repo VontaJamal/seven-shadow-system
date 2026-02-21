@@ -39,9 +39,15 @@ Runtime flags:
 
 - `--policy-bundle <path>`
 - `--policy-schema <path>`
+- `--provider github|gitlab`
 - One of:
   - `--policy-public-key <keyId=path>` (legacy RSA path)
   - `--policy-trust-store <path>` (recommended)
+
+Provider approval token environment variables:
+
+- `github`: `GITHUB_TOKEN`
+- `gitlab`: `GITLAB_TOKEN`
 
 Trust store schemas:
 
@@ -77,6 +83,21 @@ Semantics:
 Migration guide:
 
 - `docs/migrations/policy-trust-store-v1-to-v2.md`
+
+Trust-store operations CLI:
+
+- `lint --trust-store <path> [--format text|json]`
+- `rotate-rsa --trust-store <path> --old-signer <id> --new-signer <id> --new-key-id <keyId> --new-public-key <pemPath> --effective-at <ISO8601> --output <path>`
+- `revoke --trust-store <path> --signer <id> --output <path>`
+
+Deterministic trust-tool error codes:
+
+- `E_POLICY_TRUST_TOOL_ARG_REQUIRED`
+- `E_POLICY_TRUST_TOOL_VERSION_REQUIRED`
+- `E_POLICY_TRUST_TOOL_SIGNER_NOT_FOUND`
+- `E_POLICY_TRUST_TOOL_SIGNER_EXISTS`
+- `E_POLICY_TRUST_TOOL_KEYID_EXISTS`
+- `E_POLICY_TRUST_TOOL_EFFECTIVE_AT_INVALID`
 
 ## 4) Org Policy with Constrained Local Overrides
 
@@ -121,6 +142,11 @@ Current contract checks include:
 - malformed payload behavior
 - pull-context extraction
 - approval counting semantics
+
+Current fixture coverage:
+
+- `github`
+- `gitlab`
 
 ## 7) Accessibility Snapshot Gate
 

@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
   "providers": [
-    "providers/github.v1.json"
+    "providers/github.v1.json",
+    "providers/gitlab.v1.json"
   ]
 }

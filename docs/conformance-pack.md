@@ -41,6 +41,11 @@ Provider fixture schema:
 
 The provider contract tests load fixture JSON from `conformance/provider-contract` and execute the shared harness.
 
+Current provider fixtures:
+
+- `conformance/provider-contract/providers/github.v1.json`
+- `conformance/provider-contract/providers/gitlab.v1.json`
+
 ## Baseline Cases
 
 - `pass`

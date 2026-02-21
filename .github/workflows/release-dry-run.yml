@@ -41,6 +41,11 @@ jobs:
           npm run check
           npm run conformance
 
+      - name: Validate trust-store lifecycle contracts
+        run: |
+          npm run trust:lint -- --trust-store config/policy-trust-store.sample.json --format json
+          npm run trust:lint -- --trust-store config/policy-trust-store.v2.sample.json --format json
+
       - name: Assert release workflow invariants
         run: |
           set -euo pipefail
@@ -50,6 +55,7 @@ jobs:
           rg --quiet "sbom.cdx.json" .github/workflows/release.yml
           rg --quiet "cosign sign-blob" .github/workflows/release.yml
           rg --quiet "build-provider-fixture-bundle" .github/workflows/release.yml
+          rg --quiet "Validate trust-store lifecycle contracts" .github/workflows/release.yml
 
       - name: Generate SBOM (CycloneDX)
         run: npm run sbom:generate -- --output sbom.cdx.json

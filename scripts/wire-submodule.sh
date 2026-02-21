@@ -2,6 +2,8 @@
 set -euo pipefail
 
 FORCE=0
+WITH_BUNDLE_TRUST=0
+TRUST_STORE_VERSION="2"
 POSITIONAL=()
 
 while [[ $# -gt 0 ]]; do
@@ -9,6 +11,22 @@ while [[ $# -gt 0 ]]; do
     --force|-f)
       FORCE=1
       shift
+      ;;
+    --with-bundle-trust)
+      WITH_BUNDLE_TRUST=1
+      shift
+      ;;
+    --trust-store-version)
+      if [[ $# -lt 2 ]]; then
+        echo "--trust-store-version requires a value of 1 or 2"
+        exit 1
+      fi
+      TRUST_STORE_VERSION="$2"
+      if [[ "$TRUST_STORE_VERSION" != "1" && "$TRUST_STORE_VERSION" != "2" ]]; then
+        echo "--trust-store-version must be 1 or 2"
+        exit 1
+      fi
+      shift 2
       ;;
     *)
       POSITIONAL+=("$1")
@@ -18,7 +36,12 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ ${#POSITIONAL[@]} -lt 1 ]]; then
-  echo "Usage: $0 [--force] /absolute/path/to/target-repo [submodule-path]"
+  echo "Usage: $0 [--force] [--with-bundle-trust --trust-store-version 1|2] /absolute/path/to/target-repo [submodule-path]"
+  exit 1
+fi
+
+if [[ "$WITH_BUNDLE_TRUST" -ne 1 && "$TRUST_STORE_VERSION" != "2" ]]; then
+  echo "--trust-store-version is only valid when --with-bundle-trust is set"
   exit 1
 fi
 
@@ -49,6 +72,34 @@ if [[ ! -f "$TARGET_REPO/.seven-shadow/policy.json" ]]; then
   cp "$TARGET_REPO/$SUBMODULE_PATH/config/seven-shadow-system.policy.json" "$TARGET_REPO/.seven-shadow/policy.json"
 else
   echo "Policy already exists: $TARGET_REPO/.seven-shadow/policy.json"
+fi
+
+if [[ "$WITH_BUNDLE_TRUST" -eq 1 ]]; then
+  TRUST_STORE_SOURCE="$TARGET_REPO/$SUBMODULE_PATH/config/policy-trust-store.v2.sample.json"
+  if [[ "$TRUST_STORE_VERSION" == "1" ]]; then
+    TRUST_STORE_SOURCE="$TARGET_REPO/$SUBMODULE_PATH/config/policy-trust-store.sample.json"
+  fi
+
+  TRUST_STORE_TARGET="$TARGET_REPO/.seven-shadow/policy-trust-store.json"
+  if [[ ! -f "$TRUST_STORE_TARGET" ]]; then
+    cp "$TRUST_STORE_SOURCE" "$TRUST_STORE_TARGET"
+  else
+    echo "Trust store already exists: $TRUST_STORE_TARGET"
+  fi
+
+  BUNDLE_TEMPLATE_TARGET="$TARGET_REPO/.seven-shadow/policy.bundle.template.json"
+  if [[ ! -f "$BUNDLE_TEMPLATE_TARGET" ]]; then
+    cp "$TARGET_REPO/$SUBMODULE_PATH/config/policy-bundle.v2.template.json" "$BUNDLE_TEMPLATE_TARGET"
+  else
+    echo "Bundle template already exists: $BUNDLE_TEMPLATE_TARGET"
+  fi
+
+  QUICKSTART_TARGET="$TARGET_REPO/.seven-shadow/policy-bundle-quickstart.md"
+  if [[ ! -f "$QUICKSTART_TARGET" ]]; then
+    cp "$TARGET_REPO/$SUBMODULE_PATH/templates/submodule/policy-bundle-quickstart.md" "$QUICKSTART_TARGET"
+  else
+    echo "Bundle quickstart already exists: $QUICKSTART_TARGET"
+  fi
 fi
 
 WORKFLOW_TARGET="$TARGET_REPO/.github/workflows/seven-shadow-system.yml"

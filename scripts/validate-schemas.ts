@@ -76,6 +76,13 @@ async function run(): Promise<void> {
     "providers",
     "github.v1.json"
   );
+  const providerContractGitlabFixturePath = path.join(
+    process.cwd(),
+    "conformance",
+    "provider-contract",
+    "providers",
+    "gitlab.v1.json"
+  );
 
   await validateSchemaInstance(policySchemaPath, policyPath, "policy-v2.schema.json", "config/seven-shadow-system.policy.json");
   await validateSchemaInstance(
@@ -107,6 +114,12 @@ async function run(): Promise<void> {
     providerContractGithubFixturePath,
     "provider-contract-fixtures-v1.schema.json",
     "conformance/provider-contract/providers/github.v1.json"
+  );
+  await validateSchemaInstance(
+    providerContractFixturesSchemaPath,
+    providerContractGitlabFixturePath,
+    "provider-contract-fixtures-v1.schema.json",
+    "conformance/provider-contract/providers/gitlab.v1.json"
   );
 
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "seven-shadow-schema-"));

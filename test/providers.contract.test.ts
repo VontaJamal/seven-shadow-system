@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
-import { githubProvider } from "../src/providers/github";
+import { getProviderByName, listProviderNames } from "../src/providers/registry";
 import {
   buildPagedFetchStub,
   runProviderContractSuite,
@@ -52,10 +52,6 @@ function parseFixture(raw: unknown, filePath: string): ProviderContractFixture {
   return fixture;
 }
 
-const providersByName = {
-  github: githubProvider
-} as const;
-
 const fixturesRoot = path.join(process.cwd(), "conformance", "provider-contract");
 const manifestPath = path.join(fixturesRoot, "manifest.json");
 const manifest = parseManifest(readJson(manifestPath));
@@ -63,9 +59,12 @@ const manifest = parseManifest(readJson(manifestPath));
 for (const relativeProviderPath of manifest.providers) {
   const fixturePath = path.join(fixturesRoot, relativeProviderPath);
   const fixture = parseFixture(readJson(fixturePath), fixturePath);
-  const provider = providersByName[fixture.providerName as keyof typeof providersByName];
+  const provider = getProviderByName(fixture.providerName);
 
-  assert.ok(provider, `No provider adapter registered for fixture '${fixture.providerName}'`);
+  assert.ok(
+    provider,
+    `No provider adapter registered for fixture '${fixture.providerName}'. Available: ${listProviderNames().join(", ")}`
+  );
 
   runProviderContractSuite({
     providerName: fixture.providerName,

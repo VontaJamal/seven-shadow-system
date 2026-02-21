@@ -143,6 +143,7 @@ export function runProviderContractSuite(options: ProviderContractSuiteOptions):
     try {
       globalThis.fetch = options.approvalCase.fetchImpl;
       const approvals = await options.provider.fetchHumanApprovalCount(options.approvalCase.context, {
+        authToken: "token",
         githubToken: "token",
         allowedAuthors: options.approvalCase.allowedAuthors,
         fetchTimeoutMs: options.approvalCase.fetchTimeoutMs,

@@ -281,6 +281,7 @@ async function fetchHumanApprovalCount(
   context: PullContext,
   options: ProviderApprovalOptions
 ): Promise<number> {
+  const token = options.authToken ?? options.githubToken;
   const retryPolicy = normalizeRetryPolicy(options.retry);
   const latestStateByLogin = new Map<string, { state: string; type: string }>();
 
@@ -300,7 +301,7 @@ async function fetchHumanApprovalCount(
         response = await fetch(url, {
           headers: {
             Accept: "application/vnd.github+json",
-            Authorization: `Bearer ${options.githubToken}`,
+            Authorization: `Bearer ${token}`,
             "X-GitHub-Api-Version": "2022-11-28"
           },
           signal: controller.signal
@@ -526,6 +527,7 @@ function extractPullContext(eventName: string, payload: Record<string, unknown>)
 
 export const githubProvider: ProviderAdapter = {
   name: "github",
+  approvalTokenEnvVar: "GITHUB_TOKEN",
   supportedEvents: GITHUB_SUPPORTED_EVENTS,
   extractTargets: (eventName: string, payload: unknown, policy: ProviderPolicyContext): ProviderTargetExtractionResult => {
     const obj = asObject(payload);

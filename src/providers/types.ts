@@ -37,6 +37,7 @@ export interface ProviderTargetExtractionResult {
 }
 
 export interface ProviderApprovalOptions {
+  authToken?: string;
   githubToken: string;
   allowedAuthors: Set<string>;
   fetchTimeoutMs: number;
@@ -65,6 +66,7 @@ export class ProviderApprovalError extends Error {
 
 export interface ProviderAdapter {
   name: string;
+  approvalTokenEnvVar?: string;
   supportedEvents: ReadonlySet<string>;
   extractTargets: (
     eventName: string,

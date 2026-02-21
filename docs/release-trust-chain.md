@@ -1,6 +1,6 @@
 # Release Trust Chain
 
-Seven Shadow System release provenance requires six controls:
+Seven Shadow System release provenance requires seven controls:
 
 1. Signed annotated Git tags.
 2. npm publish with provenance (`--provenance`).
@@ -8,6 +8,7 @@ Seven Shadow System release provenance requires six controls:
 4. CycloneDX SBOM generation (`sbom.cdx.json`).
 5. SHA-256 checksums covering tarball + SBOM + conformance bundle + provider fixture bundle.
 6. Sigstore signatures for `sbom.cdx.json` and `SHA256SUMS.txt`.
+7. Trust-store lifecycle lint gate for sample trust contracts.
 
 ## Required Repository Secrets
 
@@ -17,7 +18,7 @@ Seven Shadow System release provenance requires six controls:
 ## Pre-Release Gate
 
 `Release Dry Run / dry-run` must pass before cutting a release tag.
-This validates packaging, checksums, SBOM generation, and signature mechanics without publishing.
+This validates trust-store linting, packaging, checksums, SBOM generation, and signature mechanics without publishing.
 
 ## Maintainer Tag Procedure
 

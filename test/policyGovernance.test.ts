@@ -264,6 +264,43 @@ test("revoked signer signatures fail closed retroactively", async () => {
   await assert.rejects(() => verifyPolicyBundleWithTrustStore(signedBundle, trustStore, schemaDigest), /E_POLICY_TRUST_SIGNER_REVOKED/);
 });
 
+test("trust store lifecycle mutation shapes roundtrip deterministically", () => {
+  const trustStore = parsePolicyTrustStore({
+    schemaVersion: 2,
+    signers: [
+      {
+        id: "maintainer-old",
+        type: "rsa-key",
+        keyId: "maintainer-old",
+        publicKeyPem: "-----BEGIN PUBLIC KEY-----\nold\n-----END PUBLIC KEY-----",
+        state: "retired",
+        validFrom: "2026-01-01T00:00:00.000Z",
+        validUntil: "2026-03-01T00:00:00.000Z",
+        replacedBy: "maintainer-new"
+      },
+      {
+        id: "maintainer-new",
+        type: "rsa-key",
+        keyId: "maintainer-new",
+        publicKeyPem: "-----BEGIN PUBLIC KEY-----\nnew\n-----END PUBLIC KEY-----",
+        state: "active",
+        validFrom: "2026-03-01T00:00:00.000Z",
+        replaces: "maintainer-old"
+      },
+      {
+        id: "release-keyless",
+        type: "sigstore-keyless",
+        certificateIssuer: "https://token.actions.githubusercontent.com",
+        certificateIdentityURI: "https://github.com/acme/repo/.github/workflows/release.yml@refs/tags/v1.0.0",
+        state: "revoked"
+      }
+    ]
+  });
+
+  const reparsed = parsePolicyTrustStore(JSON.parse(JSON.stringify(trustStore)) as unknown);
+  assert.deepEqual(reparsed, trustStore);
+});
+
 test("org policy override merge blocks forbidden path changes", () => {
   const orgPolicy = {
     version: 2,

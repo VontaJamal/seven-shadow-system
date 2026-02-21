@@ -5,6 +5,8 @@ export {
   runSevenShadowSystem
 } from "./sevenShadowSystem";
 export { githubProvider } from "./providers/github";
+export { gitlabProvider } from "./providers/gitlab";
+export { getProviderByName, listProviderNames, listProviders, providerRegistry } from "./providers/registry";
 export { ProviderApprovalError } from "./providers/types";
 export {
   DEFAULT_POLICY_OVERRIDE_CONSTRAINTS,

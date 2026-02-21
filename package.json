@@ -25,7 +25,8 @@
     "docs/policy-governance.md",
     "docs/migrations/",
     "action.yml",
-    "scripts/wire-submodule.sh"
+    "scripts/wire-submodule.sh",
+    "templates/submodule/"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -44,6 +45,9 @@
     "policy-bundle:sign": "npm run build && node dist/scripts/policy-bundle.js sign",
     "policy-bundle:sign-keyless": "npm run build && node dist/scripts/policy-bundle.js sign-keyless",
     "policy-bundle:verify": "npm run build && node dist/scripts/policy-bundle.js verify",
+    "trust:lint": "npm run build && node dist/scripts/policy-trust-store.js lint",
+    "trust:rotate-rsa": "npm run build && node dist/scripts/policy-trust-store.js rotate-rsa",
+    "trust:revoke": "npm run build && node dist/scripts/policy-trust-store.js revoke",
     "check": "npm run test && npm run validate:schemas && npm run validate:security-gates",
     "guard:seven-shadow": "npm run build && node dist/src/sevenShadowSystem.js --policy config/seven-shadow-system.policy.json",
     "migrate:policy": "npm run build && node dist/scripts/migrate-policy-v1-to-v2.js"

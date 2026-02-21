@@ -81,6 +81,23 @@ function baseEvent(): Record<string, unknown> {
   };
 }
 
+function baseGitlabMergeRequestEvent(): Record<string, unknown> {
+  return {
+    object_kind: "merge_request",
+    project: {
+      path_with_namespace: "acme/platform/repo"
+    },
+    user: {
+      username: "maintainer"
+    },
+    object_attributes: {
+      id: 101,
+      iid: 17,
+      description: "Please review this merge request."
+    }
+  };
+}
+
 test("runSevenShadowSystem loads policy from verified signed bundle", async () => {
   const tempDir = await makeTempDir();
 
@@ -452,6 +469,123 @@ test("runSevenShadowSystem replay mode detects baseline drift with deterministic
     report = JSON.parse(await fs.readFile(reportPath, "utf8")) as { findings: Array<{ code: string }> };
     assert.equal(mismatchCode, 1);
     assert.equal(report.findings.some((item) => item.code === "GUARD_REPLAY_MISMATCH"), true);
+  } finally {
+    await fs.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("runSevenShadowSystem supports --provider gitlab with provider-specific approval token env", async () => {
+  const tempDir = await makeTempDir();
+  const originalFetch = globalThis.fetch;
+
+  try {
+    const policyPath = path.join(tempDir, "policy.json");
+    const eventPath = path.join(tempDir, "event.json");
+    const reportPath = path.join(tempDir, "report.json");
+    const policyBase = basePolicy();
+    const policy = {
+      ...policyBase,
+      approvals: {
+        ...(policyBase.approvals as Record<string, unknown>),
+        minHumanApprovals: 1
+      }
+    };
+
+    await fs.writeFile(policyPath, `${JSON.stringify(policy, null, 2)}\n`, "utf8");
+    await fs.writeFile(eventPath, `${JSON.stringify(baseGitlabMergeRequestEvent(), null, 2)}\n`, "utf8");
+
+    globalThis.fetch = async () =>
+      new Response(
+        JSON.stringify({
+          approved_by: [
+            {
+              user: {
+                username: "reviewer-1",
+                bot: false
+              }
+            }
+          ]
+        }),
+        {
+          status: 200,
+          headers: {
+            "content-type": "application/json"
+          }
+        }
+      );
+
+    const code = await runSevenShadowSystem(
+      [
+        "--policy",
+        policyPath,
+        "--provider",
+        "gitlab",
+        "--event",
+        eventPath,
+        "--event-name",
+        "Merge Request Hook",
+        "--report",
+        reportPath
+      ],
+      { ...process.env, GITLAB_TOKEN: "token", GITHUB_TOKEN: "" }
+    );
+
+    const report = JSON.parse(await fs.readFile(reportPath, "utf8")) as {
+      provider: string;
+      decision: string;
+    };
+    assert.equal(code, 0);
+    assert.equal(report.provider, "gitlab");
+    assert.equal(report.decision, "pass");
+  } finally {
+    globalThis.fetch = originalFetch;
+    await fs.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("runSevenShadowSystem blocks gitlab approval verification when provider token is missing", async () => {
+  const tempDir = await makeTempDir();
+
+  try {
+    const policyPath = path.join(tempDir, "policy.json");
+    const eventPath = path.join(tempDir, "event.json");
+    const reportPath = path.join(tempDir, "report.json");
+    const policyBase = basePolicy();
+    const policy = {
+      ...policyBase,
+      approvals: {
+        ...(policyBase.approvals as Record<string, unknown>),
+        minHumanApprovals: 1
+      }
+    };
+
+    await fs.writeFile(policyPath, `${JSON.stringify(policy, null, 2)}\n`, "utf8");
+    await fs.writeFile(eventPath, `${JSON.stringify(baseGitlabMergeRequestEvent(), null, 2)}\n`, "utf8");
+
+    const code = await runSevenShadowSystem(
+      [
+        "--policy",
+        policyPath,
+        "--provider",
+        "gitlab",
+        "--event",
+        eventPath,
+        "--event-name",
+        "Merge Request Hook",
+        "--report",
+        reportPath
+      ],
+      { ...process.env, GITLAB_TOKEN: "", GITHUB_TOKEN: "" }
+    );
+
+    const report = JSON.parse(await fs.readFile(reportPath, "utf8")) as {
+      findings: Array<{ code: string; message: string }>;
+    };
+    const finding = report.findings.find((item) => item.code === "GUARD_APPROVALS_UNVERIFIED");
+
+    assert.equal(code, 1);
+    assert.ok(finding);
+    assert.match(finding.message, /GITLAB_TOKEN unavailable/);
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true });
   }

@@ -16,6 +16,12 @@ Seven Shadow System is designed for idempotent submodule-first integration.
 ./scripts/wire-submodule.sh /absolute/path/to/consumer-repo
 ```
 
+Optional bundle/trust scaffold:
+
+```bash
+./scripts/wire-submodule.sh --with-bundle-trust --trust-store-version 2 /absolute/path/to/consumer-repo
+```
+
 Optional overwrite of existing workflow template:
 
 ```bash
@@ -55,3 +61,9 @@ node governance/seven-shadow-system/dist/src/sevenShadowSystem.js \
   --report-format all \
   --redact
 ```
+
+Scaffolded trust files (when `--with-bundle-trust` is used):
+
+- `.seven-shadow/policy-trust-store.json`
+- `.seven-shadow/policy.bundle.template.json`
+- `.seven-shadow/policy-bundle-quickstart.md`

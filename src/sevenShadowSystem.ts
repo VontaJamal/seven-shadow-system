@@ -17,7 +17,7 @@ import {
   verifyPolicyBundle,
   type PolicyOverrideConstraints
 } from "./policyGovernance";
-import { githubProvider } from "./providers/github";
+import { getProviderByName } from "./providers/registry";
 import { ProviderApprovalError } from "./providers/types";
 import type { ProviderAdapter, ProviderReviewTarget, PullContext } from "./providers/types";
 
@@ -226,10 +226,6 @@ export interface GuardReportV2 {
   accessibilitySummary: AccessibilitySummary;
   generatedReports?: string[];
 }
-
-const PROVIDERS: Record<string, ProviderAdapter> = {
-  github: githubProvider
-};
 
 function parseBooleanStrict(value: string, optionName: string): boolean {
   if (value === "true") {
@@ -519,11 +515,12 @@ function withRemediation(finding: GuardFinding): GuardFinding {
     GUARD_DISCLOSURE_REQUIRED: "Add the configured disclosure tag to high AI-score content.",
     GUARD_AI_SCORE_EXCEEDED: "Reduce AI-template language or raise maxAiScore with maintainer approval.",
     GUARD_PULL_CONTEXT_MISSING: "Ensure the workflow is triggered by pull-request related events with repository context.",
-    GUARD_APPROVALS_UNVERIFIED: "Provide GITHUB_TOKEN with pull request read scope so approvals can be verified.",
-    GUARD_APPROVALS_RATE_LIMITED: "Increase approval retry capacity or wait for GitHub API rate limits to reset before retrying.",
+    GUARD_APPROVALS_UNVERIFIED:
+      "Provide the configured provider approval token environment variable with pull request read scope so approvals can be verified.",
+    GUARD_APPROVALS_RATE_LIMITED: "Increase approval retry capacity or wait for provider API rate limits to reset before retrying.",
     GUARD_APPROVALS_TIMEOUT: "Increase approvals.fetchTimeoutMs or review provider/network latency before rerunning.",
     GUARD_APPROVALS_RETRY_EXHAUSTED: "Tune approvals.retry.* settings or reduce provider pressure, then retry verification.",
-    GUARD_APPROVALS_FETCH_ERROR: "Retry later or verify GitHub API/network access and token permissions.",
+    GUARD_APPROVALS_FETCH_ERROR: "Retry later or verify provider API/network access and token permissions.",
     GUARD_HUMAN_APPROVALS: "Collect additional human approvals or lower approvals.minHumanApprovals.",
     GUARD_REPLAY_MISMATCH: "Re-run with the same policy/event inputs or refresh the replay baseline when intended behavior changes."
   };
@@ -535,7 +532,7 @@ function withRemediation(finding: GuardFinding): GuardFinding {
 }
 
 function getProvider(name: string): ProviderAdapter {
-  const provider = PROVIDERS[name.trim().toLowerCase()];
+  const provider = getProviderByName(name);
   if (!provider) {
     throw new Error(`E_PROVIDER_UNSUPPORTED: '${name}'`);
   }
@@ -784,8 +781,14 @@ function applyCliOverrides(policy: GuardPolicy, args: ParsedArgs): GuardPolicy {
   };
 }
 
-export function extractTargetsFromEvent(eventName: string, payload: unknown, policy: GuardPolicy): ReviewTarget[] {
-  const extraction = githubProvider.extractTargets(eventName, payload, policy);
+export function extractTargetsFromEvent(
+  eventName: string,
+  payload: unknown,
+  policy: GuardPolicy,
+  providerName = "github"
+): ReviewTarget[] {
+  const provider = getProvider(providerName);
+  const extraction = provider.extractTargets(eventName, payload, policy);
   return extraction.targets;
 }
 
@@ -1364,19 +1367,25 @@ export async function runSevenShadowSystem(
         })
       );
     } else {
-      const githubToken = env.GITHUB_TOKEN;
-      if (!githubToken) {
+      const tokenEnvVar = provider.approvalTokenEnvVar ?? "GITHUB_TOKEN";
+      const approvalToken = env[tokenEnvVar];
+      if (!approvalToken) {
         findings.push(
           withRemediation({
             code: "GUARD_APPROVALS_UNVERIFIED",
             severity: "block",
-            message: "GITHUB_TOKEN unavailable; cannot verify required human approvals"
+            message: `${tokenEnvVar} unavailable; cannot verify required human approvals for provider '${provider.name}'`,
+            details: {
+              provider: provider.name,
+              tokenEnvVar
+            }
           })
         );
       } else {
         try {
           const approvals = await provider.fetchHumanApprovalCount(pullContext, {
-            githubToken,
+            authToken: approvalToken,
+            githubToken: approvalToken,
             allowedAuthors,
             fetchTimeoutMs: policy.approvals.fetchTimeoutMs,
             maxPages: policy.approvals.maxPages,

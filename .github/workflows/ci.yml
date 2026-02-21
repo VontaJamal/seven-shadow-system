@@ -81,6 +81,26 @@ jobs:
       - name: Validate Security Gates
         run: npm run validate:security-gates
 
+  trust-rollout:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+
+      - name: Setup Node
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install
+        run: npm ci
+
+      - name: Validate trust stores
+        run: |
+          npm run trust:lint -- --trust-store config/policy-trust-store.sample.json --format json
+          npm run trust:lint -- --trust-store config/policy-trust-store.v2.sample.json --format json
+
   fuzz:
     runs-on: ubuntu-latest
     steps:

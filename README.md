@@ -12,7 +12,7 @@ npm test
 npm run guard:seven-shadow -- --event examples/pr_review_event.json --event-name pull_request_review
 ```
 
-If `approvals.minHumanApprovals > 0` and `GITHUB_TOKEN` is not available, the guard will intentionally return `block`.
+If `approvals.minHumanApprovals > 0` and the configured provider token is missing (`GITHUB_TOKEN` for GitHub, `GITLAB_TOKEN` for GitLab), the guard will intentionally return `block`.
 
 ## Decisions
 
@@ -47,7 +47,7 @@ node dist/src/sevenShadowSystem.js \
 
 ### Useful Flags
 
-- `--provider github`
+- `--provider github|gitlab`
 - `--report-format json|markdown|sarif|all`
 - `--fail-on-unsupported-event [true|false]`
 - `--max-body-chars <int>`
@@ -83,6 +83,12 @@ Bundle tool commands:
 - `npm run policy-bundle:sign -- --bundle .seven-shadow/policy.bundle.json --key-id maintainer --private-key keys/maintainer.pem`
 - `npm run policy-bundle:sign-keyless -- --bundle .seven-shadow/policy.bundle.json --signer-id release-keyless`
 - `npm run policy-bundle:verify -- --bundle .seven-shadow/policy.bundle.json --schema schemas/policy-v2.schema.json --trust-store config/policy-trust-store.sample.json`
+
+Trust-store operations:
+
+- `npm run trust:lint -- --trust-store config/policy-trust-store.v2.sample.json --format json`
+- `npm run trust:rotate-rsa -- --trust-store config/policy-trust-store.v2.sample.json --old-signer maintainer-rsa --new-signer maintainer-rsa-2026 --new-key-id maintainer-2026 --new-public-key keys/maintainer-2026.pub --effective-at 2026-03-01T00:00:00.000Z --output .seven-shadow/policy-trust-store.rotated.json`
+- `npm run trust:revoke -- --trust-store .seven-shadow/policy-trust-store.json --signer maintainer-rsa --output .seven-shadow/policy-trust-store.revoked.json`
 
 Trust store files:
 
@@ -133,6 +139,9 @@ All reports include stable finding codes and remediation text.
 - `npm run test:fuzz` runs targeted event mutation fuzzing (seed override: `FAST_CHECK_SEED`).
 - `npm run conformance` runs the in-repo conformance fixture pack.
 - `npm run test:provider-contract` runs provider adapter contract tests.
+- `npm run trust:lint` validates trust-store signer contracts.
+- `npm run trust:rotate-rsa` emits lifecycle-linked trust-store rotation output.
+- `npm run trust:revoke` marks signers revoked for retroactive bundle rejection.
 - `npm run provider-fixtures:bundle` builds `seven-shadow-provider-contract-fixtures-v<packageVersion>.zip`.
 - `npm run test:accessibility` enforces accessibility snapshot stability.
 - `npm run validate:security-gates` ensures dependency-review severity and `config/security-gates.json` stay aligned.
@@ -144,11 +153,23 @@ All reports include stable finding codes and remediation text.
 ./scripts/wire-submodule.sh /absolute/path/to/consumer-repo
 ```
 
+Optional trust scaffold:
+
+```bash
+./scripts/wire-submodule.sh --with-bundle-trust --trust-store-version 2 /absolute/path/to/consumer-repo
+```
+
 This installs:
 
 - `governance/seven-shadow-system` (submodule)
 - `.seven-shadow/policy.json` (consumer policy)
 - `.github/workflows/seven-shadow-system.yml` (guard workflow)
+
+With `--with-bundle-trust`, it also scaffolds:
+
+- `.seven-shadow/policy-trust-store.json`
+- `.seven-shadow/policy.bundle.template.json`
+- `.seven-shadow/policy-bundle-quickstart.md`
 
 Use `--force` only when you intentionally want to overwrite an existing workflow template.
 
