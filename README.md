@@ -12,7 +12,7 @@ npm test
 npm run guard:seven-shadow -- --event examples/pr_review_event.json --event-name pull_request_review
 ```
 
-If `approvals.minHumanApprovals > 0` and the configured provider token is missing (`GITHUB_TOKEN` for GitHub, `GITLAB_TOKEN` for GitLab), the guard will intentionally return `block`.
+If `approvals.minHumanApprovals > 0` and the configured provider token is missing (`GITHUB_TOKEN` for GitHub, `GITLAB_TOKEN` for GitLab, `BITBUCKET_TOKEN` for Bitbucket), the guard will intentionally return `block`.
 
 ## Decisions
 
@@ -47,7 +47,7 @@ node dist/src/sevenShadowSystem.js \
 
 ### Useful Flags
 
-- `--provider github|gitlab`
+- `--provider github|gitlab|bitbucket`
 - `--report-format json|markdown|sarif|all`
 - `--fail-on-unsupported-event [true|false]`
 - `--max-body-chars <int>`
@@ -89,6 +89,7 @@ Trust-store operations:
 - `npm run trust:lint -- --trust-store config/policy-trust-store.v2.sample.json --format json`
 - `npm run trust:rotate-rsa -- --trust-store config/policy-trust-store.v2.sample.json --old-signer maintainer-rsa --new-signer maintainer-rsa-2026 --new-key-id maintainer-2026 --new-public-key keys/maintainer-2026.pub --effective-at 2026-03-01T00:00:00.000Z --output .seven-shadow/policy-trust-store.rotated.json`
 - `npm run trust:revoke -- --trust-store .seven-shadow/policy-trust-store.json --signer maintainer-rsa --output .seven-shadow/policy-trust-store.revoked.json`
+- `npm run trust:bootstrap-downstream -- --trust-store-version 2 /absolute/path/to/consumer-repo`
 
 Trust store files:
 
@@ -96,6 +97,13 @@ Trust store files:
 - `config/policy-trust-store.v2.sample.json` (schema v2 with lifecycle metadata)
 - `schemas/policy-trust-store-v1.schema.json`
 - `schemas/policy-trust-store-v2.schema.json`
+
+Provider token notes:
+
+- GitHub provider uses `GITHUB_TOKEN`.
+- GitLab provider uses `GITLAB_TOKEN` (recommended scope: read-only API scope, usually `read_api`).
+- Bitbucket Cloud provider uses `BITBUCKET_TOKEN`.
+- GitLab approvals endpoint availability may vary by plan/tier/self-managed configuration; required approval checks fail closed when unavailable.
 
 ### Org Policy + Local Overrides
 
@@ -139,13 +147,17 @@ All reports include stable finding codes and remediation text.
 - `npm run test:fuzz` runs targeted event mutation fuzzing (seed override: `FAST_CHECK_SEED`).
 - `npm run conformance` runs the in-repo conformance fixture pack.
 - `npm run test:provider-contract` runs provider adapter contract tests.
+- `npm run smoke:gitlab` runs GitLab runtime smoke checks against fixture payloads.
 - `npm run trust:lint` validates trust-store signer contracts.
 - `npm run trust:rotate-rsa` emits lifecycle-linked trust-store rotation output.
 - `npm run trust:revoke` marks signers revoked for retroactive bundle rejection.
+- `npm run trust:bootstrap-downstream -- --trust-store-version 2 /absolute/path/to/consumer-repo` scaffolds rollout assets and captures deterministic trust lint output.
 - `npm run provider-fixtures:bundle` builds `seven-shadow-provider-contract-fixtures-v<packageVersion>.zip`.
 - `npm run test:accessibility` enforces accessibility snapshot stability.
 - `npm run validate:security-gates` ensures dependency-review severity and `config/security-gates.json` stay aligned.
 - `npm run sbom:generate -- --output sbom.cdx.json` generates CycloneDX SBOM output.
+- `npm run release:verify` runs local release readiness checks.
+- `npm run release:rc:prepare` runs release checks and emits `sbom.cdx.json` for tag prep.
 
 ## Submodule Integration
 
@@ -157,6 +169,12 @@ Optional trust scaffold:
 
 ```bash
 ./scripts/wire-submodule.sh --with-bundle-trust --trust-store-version 2 /absolute/path/to/consumer-repo
+```
+
+Bootstrap trust rollout (scaffold + lint snapshot + PR template):
+
+```bash
+./scripts/bootstrap-trust-rollout.sh --trust-store-version 2 /absolute/path/to/consumer-repo
 ```
 
 This installs:
@@ -171,6 +189,11 @@ With `--with-bundle-trust`, it also scaffolds:
 - `.seven-shadow/policy.bundle.template.json`
 - `.seven-shadow/policy-bundle-quickstart.md`
 
+With `bootstrap-trust-rollout.sh`, it additionally creates:
+
+- `.seven-shadow/trust-rollout/trust-lint.json`
+- `.seven-shadow/trust-rollout/pr-template.md`
+
 Use `--force` only when you intentionally want to overwrite an existing workflow template.
 
 ## GitHub Action Wrapper
@@ -183,6 +206,10 @@ This repo also provides a wrapper action (`action.yml`) for consumers already us
     submodules: recursive
 
 - uses: VontaJamal/seven-shadow-system@main
+  with:
+    provider: github
+    # provider-token: ${{ secrets.GITLAB_TOKEN }}   # for gitlab
+    # provider-token: ${{ secrets.BITBUCKET_TOKEN }} # for bitbucket
 ```
 
 ## Migration (v1 -> v2)
@@ -209,6 +236,7 @@ Trust-store migration guide: `docs/migrations/policy-trust-store-v1-to-v2.md`
 Release safety workflow:
 
 - `Release Dry Run / dry-run` validates release mechanics before tag-based publish.
+- `Release` enforces tag/package version equality (`v${package.json.version}`) before publishing.
 
 ## License
 

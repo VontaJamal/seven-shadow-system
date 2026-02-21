@@ -1,6 +1,6 @@
 {
   "name": "@rinshari/seven-shadow-system",
-  "version": "0.2.0",
+  "version": "0.3.0-rc.1",
   "description": "Composable policy engine and CLI for AI-influenced review detection and blocking.",
   "license": "MIT",
   "main": "dist/src/index.js",
@@ -14,6 +14,7 @@
     "schemas/",
     "conformance/",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE",
     "config/",
     "templates/workflows/",
@@ -26,6 +27,7 @@
     "docs/migrations/",
     "action.yml",
     "scripts/wire-submodule.sh",
+    "scripts/bootstrap-trust-rollout.sh",
     "templates/submodule/"
   ],
   "scripts": {
@@ -39,6 +41,7 @@
     "validate:security-gates": "npm run build && node dist/scripts/validate-security-gates.js",
     "conformance": "npm run build && node dist/scripts/run-conformance.js",
     "provider-fixtures:bundle": "npm run build && node dist/scripts/build-provider-fixture-bundle.js",
+    "smoke:gitlab": "npm run build && node dist/scripts/gitlab-smoke.js",
     "security:scorecard": "npm run build && node dist/scripts/evaluate-scorecard.js --config config/security-gates.json",
     "sbom:generate": "npm run build && node dist/scripts/generate-sbom.js",
     "policy-bundle:create": "npm run build && node dist/scripts/policy-bundle.js create",
@@ -48,6 +51,9 @@
     "trust:lint": "npm run build && node dist/scripts/policy-trust-store.js lint",
     "trust:rotate-rsa": "npm run build && node dist/scripts/policy-trust-store.js rotate-rsa",
     "trust:revoke": "npm run build && node dist/scripts/policy-trust-store.js revoke",
+    "trust:bootstrap-downstream": "bash scripts/bootstrap-trust-rollout.sh",
+    "release:verify": "npm run check && npm run conformance && npm run test:provider-contract && npm run provider-fixtures:bundle && npm run trust:lint -- --trust-store config/policy-trust-store.sample.json --format json && npm run trust:lint -- --trust-store config/policy-trust-store.v2.sample.json --format json",
+    "release:rc:prepare": "npm run release:verify && npm run sbom:generate -- --output sbom.cdx.json",
     "check": "npm run test && npm run validate:schemas && npm run validate:security-gates",
     "guard:seven-shadow": "npm run build && node dist/src/sevenShadowSystem.js --policy config/seven-shadow-system.policy.json",
     "migrate:policy": "npm run build && node dist/scripts/migrate-policy-v1-to-v2.js"

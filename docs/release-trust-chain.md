@@ -1,6 +1,6 @@
 # Release Trust Chain
 
-Seven Shadow System release provenance requires seven controls:
+Seven Shadow System release provenance requires eight controls:
 
 1. Signed annotated Git tags.
 2. npm publish with provenance (`--provenance`).
@@ -9,6 +9,7 @@ Seven Shadow System release provenance requires seven controls:
 5. SHA-256 checksums covering tarball + SBOM + conformance bundle + provider fixture bundle.
 6. Sigstore signatures for `sbom.cdx.json` and `SHA256SUMS.txt`.
 7. Trust-store lifecycle lint gate for sample trust contracts.
+8. Release tag/package version invariant (`github.ref_name` must equal `v<package.json.version>`).
 
 ## Required Repository Secrets
 
@@ -20,16 +21,23 @@ Seven Shadow System release provenance requires seven controls:
 `Release Dry Run / dry-run` must pass before cutting a release tag.
 This validates trust-store linting, packaging, checksums, SBOM generation, and signature mechanics without publishing.
 
+Maintainers can run the same gate locally with:
+
+```bash
+npm run release:verify
+```
+
 ## Maintainer Tag Procedure
 
 Create a signed annotated tag locally, then push:
 
 ```bash
-git tag -s v0.2.1 -m "v0.2.1"
-git push origin v0.2.1
+npm run release:rc:prepare
+git tag -s v0.3.0-rc.1 -m "v0.3.0-rc.1"
+git push origin v0.3.0-rc.1
 ```
 
-The release workflow (`.github/workflows/release.yml`) verifies the tag signature before any publish steps run.
+The release workflow (`.github/workflows/release.yml`) verifies the tag signature and enforces tag/version equality before any publish steps run.
 
 ## Release Outputs
 

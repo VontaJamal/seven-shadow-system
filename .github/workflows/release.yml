@@ -52,6 +52,18 @@ jobs:
           node-version: "22"
           cache: "npm"
 
+      - name: Verify release tag matches package version
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          EXPECTED_TAG="v${PKG_VERSION}"
+          if [[ "$TAG_NAME" != "$EXPECTED_TAG" ]]; then
+            echo "E_RELEASE_TAG_VERSION_MISMATCH: expected '$EXPECTED_TAG' but received '$TAG_NAME'"
+            exit 1
+          fi
+
       - name: Install dependencies
         run: npm ci
 

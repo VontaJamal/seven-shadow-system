@@ -36,6 +36,24 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify release tag/package invariant (dry run)
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          if [[ "$EVENT_NAME" == "push" ]]; then
+            TAG_NAME="$REF_NAME"
+          else
+            TAG_NAME="v${PKG_VERSION}"
+          fi
+          EXPECTED_TAG="v${PKG_VERSION}"
+          if [[ "$TAG_NAME" != "$EXPECTED_TAG" ]]; then
+            echo "E_RELEASE_TAG_VERSION_MISMATCH: expected '$EXPECTED_TAG' but received '$TAG_NAME'"
+            exit 1
+          fi
+
       - name: Run checks
         run: |
           npm run check
@@ -56,6 +74,7 @@ jobs:
           rg --quiet "cosign sign-blob" .github/workflows/release.yml
           rg --quiet "build-provider-fixture-bundle" .github/workflows/release.yml
           rg --quiet "Validate trust-store lifecycle contracts" .github/workflows/release.yml
+          rg --quiet "E_RELEASE_TAG_VERSION_MISMATCH" .github/workflows/release.yml
 
       - name: Generate SBOM (CycloneDX)
         run: npm run sbom:generate -- --output sbom.cdx.json

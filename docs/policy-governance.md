@@ -39,7 +39,7 @@ Runtime flags:
 
 - `--policy-bundle <path>`
 - `--policy-schema <path>`
-- `--provider github|gitlab`
+- `--provider github|gitlab|bitbucket`
 - One of:
   - `--policy-public-key <keyId=path>` (legacy RSA path)
   - `--policy-trust-store <path>` (recommended)
@@ -48,6 +48,13 @@ Provider approval token environment variables:
 
 - `github`: `GITHUB_TOKEN`
 - `gitlab`: `GITLAB_TOKEN`
+- `bitbucket`: `BITBUCKET_TOKEN`
+
+GitLab provider notes:
+
+- Supported webhook event names are exact: `Merge Request Hook`, `Note Hook`.
+- Recommended token scope is read-only API scope (`read_api`).
+- The approvals endpoint may be unavailable depending on plan/tier/self-managed configuration; this fails closed via `GUARD_APPROVALS_UNVERIFIED` when required approvals cannot be verified.
 
 Trust store schemas:
 
@@ -89,6 +96,12 @@ Trust-store operations CLI:
 - `lint --trust-store <path> [--format text|json]`
 - `rotate-rsa --trust-store <path> --old-signer <id> --new-signer <id> --new-key-id <keyId> --new-public-key <pemPath> --effective-at <ISO8601> --output <path>`
 - `revoke --trust-store <path> --signer <id> --output <path>`
+- `./scripts/bootstrap-trust-rollout.sh [--force] [--trust-store-version 1|2] [--submodule-path <path>] <target-repo>`
+
+Bootstrap rollout output (in consumer repos):
+
+- `.seven-shadow/trust-rollout/trust-lint.json`
+- `.seven-shadow/trust-rollout/pr-template.md`
 
 Deterministic trust-tool error codes:
 
@@ -147,6 +160,7 @@ Current fixture coverage:
 
 - `github`
 - `gitlab`
+- `bitbucket`
 
 ## 7) Accessibility Snapshot Gate
 

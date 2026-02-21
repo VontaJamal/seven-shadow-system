@@ -35,9 +35,13 @@ inputs:
     required: false
     default: "all"
   provider:
-    description: "Provider adapter to use"
+    description: "Provider adapter to use (github, gitlab, or bitbucket)"
     required: false
     default: "github"
+  provider-token:
+    description: "Optional provider API token for non-GitHub adapters (used as GITLAB_TOKEN and BITBUCKET_TOKEN)"
+    required: false
+    default: ""
   redact:
     description: "Redact report body text"
     required: false
@@ -67,6 +71,8 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ github.token }}
+        GITLAB_TOKEN: ${{ inputs.provider-token }}
+        BITBUCKET_TOKEN: ${{ inputs.provider-token }}
       run: |
         REDACT_FLAG=()
         if [[ "${{ inputs.redact }}" == "true" ]]; then

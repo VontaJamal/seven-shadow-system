@@ -14,10 +14,12 @@ Use these settings for `main` to enforce baseline quality:
 - `CI / test (20)`
 - `CI / test (22)`
 - `CI / schema`
+- `CI / trust-rollout`
 - `CI / fuzz`
 - `CI / conformance`
 - `CI / provider-contract`
 - `CI / accessibility`
+- `GitLab Smoke / smoke`
 - `Supply Chain / dependency-review`
 - `Supply Chain / scorecard`
 - `Release Dry Run / dry-run`
