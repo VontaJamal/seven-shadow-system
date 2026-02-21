@@ -1,6 +1,6 @@
 # Release Trust Chain
 
-Seven Shadow System release provenance requires eight controls:
+Seven Shadow System release provenance requires ten controls:
 
 1. Signed annotated Git tags.
 2. npm publish with provenance (`--provenance`).
@@ -8,8 +8,10 @@ Seven Shadow System release provenance requires eight controls:
 4. CycloneDX SBOM generation (`sbom.cdx.json`).
 5. SHA-256 checksums covering tarball + SBOM + conformance bundle + provider fixture bundle.
 6. Sigstore signatures for `sbom.cdx.json` and `SHA256SUMS.txt`.
-7. Trust-store lifecycle lint gate for sample trust contracts.
-8. Release tag/package version invariant (`github.ref_name` must equal `v<package.json.version>`).
+7. Signature verification gate for generated SBOM/checksum artifacts before publish.
+8. Provenance attestation verification gate for the tarball before publish.
+9. Trust-store lifecycle lint gate for sample trust contracts.
+10. Release tag/package version invariant (`github.ref_name` must equal `v<package.json.version>`).
 
 ## Required Repository Secrets
 
@@ -20,6 +22,8 @@ Seven Shadow System release provenance requires eight controls:
 
 `Release Dry Run / dry-run` must pass before cutting a release tag.
 This validates trust-store linting, packaging, checksums, SBOM generation, and signature mechanics without publishing.
+
+`RC Soak / rc-soak` should pass for release candidate tags to validate deterministic replay stability across providers.
 
 Maintainers can run the same gate locally with:
 
@@ -38,6 +42,7 @@ git push origin v0.3.0-rc.1
 ```
 
 The release workflow (`.github/workflows/release.yml`) verifies the tag signature and enforces tag/version equality before any publish steps run.
+It also verifies signed SBOM/checksum outputs and verifies tarball provenance attestations prior to npm publish.
 
 ## Release Outputs
 
@@ -53,6 +58,8 @@ The release workflow (`.github/workflows/release.yml`) verifies the tag signatur
   - `SHA256SUMS.txt.sig`
   - `SHA256SUMS.txt.pem`
 - Build provenance attestation recorded by GitHub for the tarball.
+- Verified keyless signatures for `sbom.cdx.json` and `SHA256SUMS.txt`.
+- Verified provenance attestation for the release tarball.
 
 ## Verification Commands
 
@@ -83,3 +90,7 @@ cosign verify-blob \
   --signature SHA256SUMS.txt.sig \
   SHA256SUMS.txt
 ```
+
+Rollback operations reference:
+
+- `docs/runbooks/trust-store-rollback.md`

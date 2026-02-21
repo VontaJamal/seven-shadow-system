@@ -111,10 +111,44 @@ jobs:
           cosign sign-blob --yes --output-signature sbom.cdx.json.sig --output-certificate sbom.cdx.json.pem sbom.cdx.json
           cosign sign-blob --yes --output-signature SHA256SUMS.txt.sig --output-certificate SHA256SUMS.txt.pem SHA256SUMS.txt
 
+      - name: Verify signed SBOM and checksum artifacts
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
+          SERVER_URL: ${{ github.server_url }}
+        run: |
+          set -euo pipefail
+          CERT_IDENTITY="${SERVER_URL}/${REPOSITORY}/.github/workflows/release.yml@refs/tags/${TAG_NAME}"
+          cosign verify-blob \
+            --certificate-identity "$CERT_IDENTITY" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            --certificate sbom.cdx.json.pem \
+            --signature sbom.cdx.json.sig \
+            sbom.cdx.json
+          cosign verify-blob \
+            --certificate-identity "$CERT_IDENTITY" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            --certificate SHA256SUMS.txt.pem \
+            --signature SHA256SUMS.txt.sig \
+            SHA256SUMS.txt
+
       - name: Attest tarball provenance
         uses: actions/attest-build-provenance@96b4a1ef7235a096b17240c259729fdd70c83d45
         with:
           subject-path: ${{ steps.pack.outputs.tarball }}
+
+      - name: Verify tarball provenance attestation
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          SERVER_URL: ${{ github.server_url }}
+        run: |
+          set -euo pipefail
+          CERT_IDENTITY="${SERVER_URL}/${REPOSITORY}/.github/workflows/release.yml@${GITHUB_REF}"
+          gh attestation verify "${{ steps.pack.outputs.tarball }}" \
+            --repo "$REPOSITORY" \
+            --cert-identity "$CERT_IDENTITY" \
+            --cert-oidc-issuer "https://token.actions.githubusercontent.com"
 
       - name: Publish to npm with provenance
         env:

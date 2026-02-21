@@ -90,13 +90,16 @@ Trust-store operations:
 - `npm run trust:rotate-rsa -- --trust-store config/policy-trust-store.v2.sample.json --old-signer maintainer-rsa --new-signer maintainer-rsa-2026 --new-key-id maintainer-2026 --new-public-key keys/maintainer-2026.pub --effective-at 2026-03-01T00:00:00.000Z --output .seven-shadow/policy-trust-store.rotated.json`
 - `npm run trust:revoke -- --trust-store .seven-shadow/policy-trust-store.json --signer maintainer-rsa --output .seven-shadow/policy-trust-store.revoked.json`
 - `npm run trust:bootstrap-downstream -- --trust-store-version 2 /absolute/path/to/consumer-repo`
+- `npm run trust:bootstrap-org -- --targets config/trust-rollout-targets.sample.json --report .seven-shadow/trust-rollout/org-status.json`
 
 Trust store files:
 
 - `config/policy-trust-store.sample.json` (schema v1)
 - `config/policy-trust-store.v2.sample.json` (schema v2 with lifecycle metadata)
+- `config/trust-rollout-targets.sample.json` (org rollout target list)
 - `schemas/policy-trust-store-v1.schema.json`
 - `schemas/policy-trust-store-v2.schema.json`
+- `schemas/trust-rollout-targets-v1.schema.json`
 
 Provider token notes:
 
@@ -148,10 +151,12 @@ All reports include stable finding codes and remediation text.
 - `npm run conformance` runs the in-repo conformance fixture pack.
 - `npm run test:provider-contract` runs provider adapter contract tests.
 - `npm run smoke:gitlab` runs GitLab runtime smoke checks against fixture payloads.
+- `npm run soak:rc -- --iterations 72 --report rc-soak-report.json` runs deterministic multi-provider replay soak checks plus fail-closed token assertions.
 - `npm run trust:lint` validates trust-store signer contracts.
 - `npm run trust:rotate-rsa` emits lifecycle-linked trust-store rotation output.
 - `npm run trust:revoke` marks signers revoked for retroactive bundle rejection.
 - `npm run trust:bootstrap-downstream -- --trust-store-version 2 /absolute/path/to/consumer-repo` scaffolds rollout assets and captures deterministic trust lint output.
+- `npm run trust:bootstrap-org -- --targets config/trust-rollout-targets.sample.json --report .seven-shadow/trust-rollout/org-status.json` executes rollout bootstrap across many repos and emits `pending|passing|blocked` status.
 - `npm run provider-fixtures:bundle` builds `seven-shadow-provider-contract-fixtures-v<packageVersion>.zip`.
 - `npm run test:accessibility` enforces accessibility snapshot stability.
 - `npm run validate:security-gates` ensures dependency-review severity and `config/security-gates.json` stay aligned.
@@ -193,6 +198,18 @@ With `bootstrap-trust-rollout.sh`, it additionally creates:
 
 - `.seven-shadow/trust-rollout/trust-lint.json`
 - `.seven-shadow/trust-rollout/pr-template.md`
+- `.seven-shadow/trust-rollout/last-known-good/policy-trust-store.json`
+- `.seven-shadow/trust-rollout/last-known-good/trust-lint.json`
+
+Org-scale orchestration:
+
+```bash
+node dist/scripts/org-trust-rollout.js \
+  --targets config/trust-rollout-targets.sample.json \
+  --trust-store-version 2 \
+  --report .seven-shadow/trust-rollout/org-status.json \
+  --format text
+```
 
 Use `--force` only when you intentionally want to overwrite an existing workflow template.
 
@@ -232,11 +249,13 @@ Trust-store migration guide: `docs/migrations/policy-trust-store-v1-to-v2.md`
 - Branch protection guidance: `docs/branch-protection.md`
 - Conformance pack guide: `docs/conformance-pack.md`
 - Release trust chain: `docs/release-trust-chain.md`
+- Trust store rollback runbook: `docs/runbooks/trust-store-rollback.md`
 
 Release safety workflow:
 
 - `Release Dry Run / dry-run` validates release mechanics before tag-based publish.
-- `Release` enforces tag/package version equality (`v${package.json.version}`) before publishing.
+- `Release` enforces tag/package version equality (`v${package.json.version}`), verifies signed SBOM/checksum artifacts, and verifies tarball provenance attestations before publishing.
+- `RC Soak` (`.github/workflows/rc-soak.yml`) runs deterministic replay soak checks for release candidates.
 
 ## License
 

@@ -121,26 +121,44 @@ test("bootstrap-trust-rollout scaffolds trust artifacts and keeps reruns idempot
     const trustStorePath = path.join(repoPath, ".seven-shadow", "policy-trust-store.json");
     const lintSnapshotPath = path.join(repoPath, ".seven-shadow", "trust-rollout", "trust-lint.json");
     const templatePath = path.join(repoPath, ".seven-shadow", "trust-rollout", "pr-template.md");
+    const lkgTrustStorePath = path.join(
+      repoPath,
+      ".seven-shadow",
+      "trust-rollout",
+      "last-known-good",
+      "policy-trust-store.json"
+    );
+    const lkgLintSnapshotPath = path.join(repoPath, ".seven-shadow", "trust-rollout", "last-known-good", "trust-lint.json");
 
     const trustStore = JSON.parse(await fs.readFile(trustStorePath, "utf8")) as { schemaVersion: number };
     const lintSnapshot = JSON.parse(await fs.readFile(lintSnapshotPath, "utf8")) as { signerCount: number };
     const template = await fs.readFile(templatePath, "utf8");
+    const lkgTrustStore = JSON.parse(await fs.readFile(lkgTrustStorePath, "utf8")) as { schemaVersion: number };
+    const lkgLintSnapshot = JSON.parse(await fs.readFile(lkgLintSnapshotPath, "utf8")) as { signerCount: number };
 
     assert.equal(trustStore.schemaVersion, 1);
     assert.equal(lintSnapshot.signerCount, 1);
     assert.match(template, /Trust store schema version: `1`/);
     assert.match(template, /Target repository:/);
+    assert.equal(lkgTrustStore.schemaVersion, 1);
+    assert.equal(lkgLintSnapshot.signerCount, 1);
 
     await fs.writeFile(lintSnapshotPath, "{\n  \"custom\": true\n}\n", "utf8");
     await fs.writeFile(templatePath, "custom-template\n", "utf8");
+    await fs.writeFile(lkgTrustStorePath, "{\n  \"custom\": \"lkg\"\n}\n", "utf8");
+    await fs.writeFile(lkgLintSnapshotPath, "{\n  \"custom\": \"lkg-lint\"\n}\n", "utf8");
 
     const second = await runBootstrap(["--trust-store-version", "1", "--submodule-path", submodulePath, repoPath]);
     assert.equal(second.code, 0, second.stderr);
 
     const lintAfter = await fs.readFile(lintSnapshotPath, "utf8");
     const templateAfter = await fs.readFile(templatePath, "utf8");
+    const lkgTrustStoreAfter = await fs.readFile(lkgTrustStorePath, "utf8");
+    const lkgLintSnapshotAfter = await fs.readFile(lkgLintSnapshotPath, "utf8");
     assert.match(lintAfter, /"custom": true/);
     assert.equal(templateAfter.trim(), "custom-template");
+    assert.match(lkgTrustStoreAfter, /"custom": "lkg"/);
+    assert.match(lkgLintSnapshotAfter, /"custom": "lkg-lint"/);
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true });
   }
@@ -160,21 +178,35 @@ test("bootstrap-trust-rollout supports trust-store version 2 and force overwrite
     const trustStorePath = path.join(repoPath, ".seven-shadow", "policy-trust-store.json");
     const lintSnapshotPath = path.join(repoPath, ".seven-shadow", "trust-rollout", "trust-lint.json");
     const templatePath = path.join(repoPath, ".seven-shadow", "trust-rollout", "pr-template.md");
+    const lkgTrustStorePath = path.join(
+      repoPath,
+      ".seven-shadow",
+      "trust-rollout",
+      "last-known-good",
+      "policy-trust-store.json"
+    );
+    const lkgLintSnapshotPath = path.join(repoPath, ".seven-shadow", "trust-rollout", "last-known-good", "trust-lint.json");
 
     const trustStore = JSON.parse(await fs.readFile(trustStorePath, "utf8")) as { schemaVersion: number };
     assert.equal(trustStore.schemaVersion, 2);
 
     await fs.writeFile(lintSnapshotPath, "{\n  \"custom\": true\n}\n", "utf8");
     await fs.writeFile(templatePath, "custom-template\n", "utf8");
+    await fs.writeFile(lkgTrustStorePath, "{\n  \"custom\": \"lkg\"\n}\n", "utf8");
+    await fs.writeFile(lkgLintSnapshotPath, "{\n  \"custom\": \"lkg-lint\"\n}\n", "utf8");
 
     const second = await runBootstrap(["--force", "--trust-store-version", "2", "--submodule-path", submodulePath, repoPath]);
     assert.equal(second.code, 0, second.stderr);
 
     const lintAfter = JSON.parse(await fs.readFile(lintSnapshotPath, "utf8")) as { signerCount: number };
     const templateAfter = await fs.readFile(templatePath, "utf8");
+    const lkgTrustStoreAfter = JSON.parse(await fs.readFile(lkgTrustStorePath, "utf8")) as { schemaVersion: number };
+    const lkgLintSnapshotAfter = JSON.parse(await fs.readFile(lkgLintSnapshotPath, "utf8")) as { signerCount: number };
     assert.equal(lintAfter.signerCount, 1);
     assert.match(templateAfter, /Trust Rollout Bootstrap PR/);
     assert.doesNotMatch(templateAfter, /custom-template/);
+    assert.equal(lkgTrustStoreAfter.schemaVersion, 2);
+    assert.equal(lkgLintSnapshotAfter.signerCount, 1);
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true });
   }

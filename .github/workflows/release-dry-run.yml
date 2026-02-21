@@ -75,6 +75,8 @@ jobs:
           rg --quiet "build-provider-fixture-bundle" .github/workflows/release.yml
           rg --quiet "Validate trust-store lifecycle contracts" .github/workflows/release.yml
           rg --quiet "E_RELEASE_TAG_VERSION_MISMATCH" .github/workflows/release.yml
+          rg --quiet "Verify signed SBOM and checksum artifacts" .github/workflows/release.yml
+          rg --quiet "gh attestation verify" .github/workflows/release.yml
 
       - name: Generate SBOM (CycloneDX)
         run: npm run sbom:generate -- --output sbom.cdx.json

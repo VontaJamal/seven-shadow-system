@@ -78,3 +78,22 @@ Additional rollout artifacts (when `bootstrap-trust-rollout.sh` is used):
 
 - `.seven-shadow/trust-rollout/trust-lint.json`
 - `.seven-shadow/trust-rollout/pr-template.md`
+- `.seven-shadow/trust-rollout/last-known-good/policy-trust-store.json`
+- `.seven-shadow/trust-rollout/last-known-good/trust-lint.json`
+
+Org-scale rollout orchestration:
+
+```bash
+node governance/seven-shadow-system/dist/scripts/org-trust-rollout.js \
+  --targets governance/seven-shadow-system/config/trust-rollout-targets.sample.json \
+  --submodule-path governance/seven-shadow-system \
+  --trust-store-version 2 \
+  --report .seven-shadow/trust-rollout/org-status.json \
+  --format text
+```
+
+Status contract:
+
+- `passing`: bootstrap + trust lint succeeded for target repo
+- `pending`: target marked `enabled=false` in targets file
+- `blocked`: bootstrap failed; deterministic `E_TRUST_ROLLOUT_*` code is captured when available

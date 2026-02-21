@@ -1,0 +1,18 @@
+{
+  "repository": {
+    "full_name": "acme-workspace/repo"
+  },
+  "actor": {
+    "nickname": "maintainer"
+  },
+  "pullrequest": {
+    "id": 17,
+    "description": "Please validate trust-gate behavior in this PR.",
+    "author": {
+      "user": {
+        "nickname": "maintainer",
+        "type": "user"
+      }
+    }
+  }
+}

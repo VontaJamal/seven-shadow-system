@@ -63,11 +63,13 @@ async function run(): Promise<void> {
   const overrideConstraintsSchemaPath = path.join(process.cwd(), "schemas", "override-constraints-v1.schema.json");
   const trustStoreV1SchemaPath = path.join(process.cwd(), "schemas", "policy-trust-store-v1.schema.json");
   const trustStoreV2SchemaPath = path.join(process.cwd(), "schemas", "policy-trust-store-v2.schema.json");
+  const trustRolloutTargetsSchemaPath = path.join(process.cwd(), "schemas", "trust-rollout-targets-v1.schema.json");
   const providerContractFixturesSchemaPath = path.join(process.cwd(), "schemas", "provider-contract-fixtures-v1.schema.json");
   const policyPath = path.join(process.cwd(), "config", "seven-shadow-system.policy.json");
   const overrideConstraintsPath = path.join(process.cwd(), "config", "policy-override-constraints.json");
   const trustStoreV1Path = path.join(process.cwd(), "config", "policy-trust-store.sample.json");
   const trustStoreV2Path = path.join(process.cwd(), "config", "policy-trust-store.v2.sample.json");
+  const trustRolloutTargetsPath = path.join(process.cwd(), "config", "trust-rollout-targets.sample.json");
   const providerContractManifestPath = path.join(process.cwd(), "conformance", "provider-contract", "manifest.json");
   const providerContractGithubFixturePath = path.join(
     process.cwd(),
@@ -109,6 +111,12 @@ async function run(): Promise<void> {
     trustStoreV2Path,
     "policy-trust-store-v2.schema.json",
     "config/policy-trust-store.v2.sample.json"
+  );
+  await validateSchemaInstance(
+    trustRolloutTargetsSchemaPath,
+    trustRolloutTargetsPath,
+    "trust-rollout-targets-v1.schema.json",
+    "config/trust-rollout-targets.sample.json"
   );
   await validateSchemaInstance(
     providerContractFixturesSchemaPath,

@@ -97,11 +97,28 @@ Trust-store operations CLI:
 - `rotate-rsa --trust-store <path> --old-signer <id> --new-signer <id> --new-key-id <keyId> --new-public-key <pemPath> --effective-at <ISO8601> --output <path>`
 - `revoke --trust-store <path> --signer <id> --output <path>`
 - `./scripts/bootstrap-trust-rollout.sh [--force] [--trust-store-version 1|2] [--submodule-path <path>] <target-repo>`
+- `node dist/scripts/org-trust-rollout.js --targets <path> [--trust-store-version 1|2] [--submodule-path <path>] [--force] [--report <path>] [--format text|json]`
 
 Bootstrap rollout output (in consumer repos):
 
 - `.seven-shadow/trust-rollout/trust-lint.json`
 - `.seven-shadow/trust-rollout/pr-template.md`
+- `.seven-shadow/trust-rollout/last-known-good/policy-trust-store.json`
+- `.seven-shadow/trust-rollout/last-known-good/trust-lint.json`
+
+Org rollout targets file (schema v1):
+
+- `config/trust-rollout-targets.sample.json`
+- `schemas/trust-rollout-targets-v1.schema.json`
+
+Org rollout status output:
+
+- each target is reported as `pending`, `passing`, or `blocked`
+- blocked targets preserve deterministic bootstrap error codes when available (`E_TRUST_ROLLOUT_*`)
+
+Rollback and recovery guidance:
+
+- `docs/runbooks/trust-store-rollback.md`
 
 Deterministic trust-tool error codes:
 
@@ -174,3 +191,15 @@ Snapshot files:
 
 - `test/accessibility.snapshot.test.ts`
 - `test/snapshots/accessibility-report.snapshot.json`
+
+## 8) RC Soak Replay Gate
+
+Release candidates are expected to pass deterministic replay soak checks:
+
+- script: `npm run soak:rc -- --iterations 72 --report rc-soak-report.json`
+- workflow: `.github/workflows/rc-soak.yml`
+
+The soak gate verifies:
+
+- replay output hash stability across GitHub/GitLab/Bitbucket fixtures
+- fail-closed provider approval behavior under missing token conditions (`GITHUB_TOKEN`, `GITLAB_TOKEN`, `BITBUCKET_TOKEN`)

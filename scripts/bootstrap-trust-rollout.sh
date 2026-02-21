@@ -105,6 +105,9 @@ fi
 ROLLOUT_DIR="$TARGET_REPO/.seven-shadow/trust-rollout"
 LINT_SNAPSHOT_PATH="$ROLLOUT_DIR/trust-lint.json"
 PR_TEMPLATE_PATH="$ROLLOUT_DIR/pr-template.md"
+LKG_DIR="$ROLLOUT_DIR/last-known-good"
+LKG_TRUST_STORE_PATH="$LKG_DIR/policy-trust-store.json"
+LKG_LINT_SNAPSHOT_PATH="$LKG_DIR/trust-lint.json"
 mkdir -p "$ROLLOUT_DIR"
 
 if [[ "$FORCE" -eq 1 || ! -f "$LINT_SNAPSHOT_PATH" ]]; then
@@ -141,7 +144,21 @@ else
   echo "Rollout PR template already exists and was not overwritten: $PR_TEMPLATE_PATH"
 fi
 
+mkdir -p "$LKG_DIR"
+if [[ "$FORCE" -eq 1 || ! -f "$LKG_TRUST_STORE_PATH" ]]; then
+  cp "$TRUST_STORE_PATH" "$LKG_TRUST_STORE_PATH"
+else
+  echo "Last-known-good trust store already exists and was not overwritten: $LKG_TRUST_STORE_PATH"
+fi
+
+if [[ "$FORCE" -eq 1 || ! -f "$LKG_LINT_SNAPSHOT_PATH" ]]; then
+  cp "$LINT_SNAPSHOT_PATH" "$LKG_LINT_SNAPSHOT_PATH"
+else
+  echo "Last-known-good lint snapshot already exists and was not overwritten: $LKG_LINT_SNAPSHOT_PATH"
+fi
+
 echo "Trust rollout bootstrap completed for $TARGET_REPO"
 echo "- trust store: $TRUST_STORE_PATH"
 echo "- lint snapshot: $LINT_SNAPSHOT_PATH"
 echo "- PR template: $PR_TEMPLATE_PATH"
+echo "- last-known-good trust store: $LKG_TRUST_STORE_PATH"
