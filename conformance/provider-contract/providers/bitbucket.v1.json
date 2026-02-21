@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "providerName": "bitbucket",
+  "policyContext": {
+    "scanPrBody": true,
+    "scanReviewBody": true,
+    "scanCommentBody": true,
+    "approvals": {
+      "fetchTimeoutMs": 5000,
+      "maxPages": 10
+    }
+  },
+  "extractionCases": [
+    {
+      "name": "extracts pull request description from pullrequest:created",
+      "eventName": "pullrequest:created",
+      "payload": {
+        "repository": {
+          "full_name": "acme-workspace/repo"
+        },
+        "actor": {
+          "nickname": "maintainer"
+        },
+        "pullrequest": {
+          "id": 17,
+          "description": "Please validate trust-gate behavior in this PR.",
+          "author": {
+            "user": {
+              "nickname": "maintainer",
+              "type": "user"
+            }
+          }
+        }
+      },
+      "expectedSources": ["pr_body"]
+    },
+    {
+      "name": "extracts comment body from pullrequest:comment_created",
+      "eventName": "pullrequest:comment_created",
+      "payload": {
+        "repository": {
+          "full_name": "acme-workspace/repo"
+        },
+        "actor": {
+          "nickname": "reviewer"
+        },
+        "pullrequest": {
+          "id": 17
+        },
+        "comment": {
+          "id": 303,
+          "content": {
+            "raw": "Please add one regression test for malformed payload handling."
+          },
+          "user": {
+            "nickname": "reviewer",
+            "type": "user"
+          }
+        }
+      },
+      "expectedSources": ["comment"]
+    }
+  ],
+  "malformedCase": {
+    "name": "reports deterministic malformed reasons for incomplete comment payload",
+    "eventName": "pullrequest:comment_updated",
+    "payload": {
+      "repository": {
+        "full_name": "acme-workspace/repo"
+      },
+      "pullrequest": {},
+      "comment": {
+        "id": 404
+      }
+    },
+    "expectedSources": [],
+    "expectedMalformedReasons": [
+      "missing pullrequest.id",
+      "missing comment.content.raw"
+    ]
+  },
+  "pullContextCases": [
+    {
+      "name": "extracts pull context from pullrequest:created",
+      "eventName": "pullrequest:created",
+      "payload": {
+        "repository": {
+          "full_name": "acme-workspace/repo"
+        },
+        "pullrequest": {
+          "id": 17
+        }
+      },
+      "expected": {
+        "owner": "acme-workspace",
+        "repo": "repo",
+        "pullNumber": 17
+      }
+    },
+    {
+      "name": "extracts pull context from pullrequest:comment_created",
+      "eventName": "pullrequest:comment_created",
+      "payload": {
+        "repository": {
+          "full_name": "acme-workspace/repo"
+        },
+        "pullrequest": {
+          "id": 19
+        }
+      },
+      "expected": {
+        "owner": "acme-workspace",
+        "repo": "repo",
+        "pullNumber": 19
+      }
+    },
+    {
+      "name": "returns null pull context when repository metadata is missing",
+      "eventName": "pullrequest:updated",
+      "payload": {
+        "pullrequest": {
+          "id": 20
+        }
+      },
+      "expected": null
+    }
+  ],
+  "approvalCase": {
+    "name": "counts approved human participants and ignores allowlisted or bot accounts",
+    "context": {
+      "owner": "acme-workspace",
+      "repo": "repo",
+      "pullNumber": 17
+    },
+    "allowedAuthors": ["trusted-admin"],
+    "expectedApprovals": 1,
+    "fetchTimeoutMs": 5000,
+    "maxPages": 5,
+    "pages": [
+      {
+        "page": 1,
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "participants": [
+            {
+              "approved": true,
+              "user": {
+                "nickname": "trusted-admin",
+                "type": "user"
+              }
+            },
+            {
+              "approved": true,
+              "user": {
+                "nickname": "ci-app",
+                "type": "app"
+              }
+            },
+            {
+              "approved": true,
+              "user": {
+                "nickname": "alice",
+                "type": "user"
+              }
+            },
+            {
+              "approved": false,
+              "user": {
+                "nickname": "bob",
+                "type": "user"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "defaultStatus": 200,
+    "defaultHeaders": {
+      "content-type": "application/json"
+    },
+    "defaultBody": {
+      "participants": []
+    }
+  }
+}

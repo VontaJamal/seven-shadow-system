@@ -4,6 +4,8 @@ export {
   extractTargetsFromEvent,
   runSevenShadowSystem
 } from "./sevenShadowSystem";
+export { bitbucketProvider } from "./providers/bitbucket";
+export { bitbucketServerStub } from "./providers/bitbucket-server.stub";
 export { githubProvider } from "./providers/github";
 export { gitlabProvider } from "./providers/gitlab";
 export { getProviderByName, listProviderNames, listProviders, providerRegistry } from "./providers/registry";

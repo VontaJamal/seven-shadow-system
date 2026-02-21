@@ -1,8 +1,10 @@
+import { bitbucketProvider } from "./bitbucket";
 import { githubProvider } from "./github";
 import { gitlabProvider } from "./gitlab";
 import type { ProviderAdapter } from "./types";
 
 const PROVIDERS: Record<string, ProviderAdapter> = {
+  bitbucket: bitbucketProvider,
   github: githubProvider,
   gitlab: gitlabProvider
 };

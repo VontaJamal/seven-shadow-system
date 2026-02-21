@@ -98,6 +98,47 @@ function baseGitlabMergeRequestEvent(): Record<string, unknown> {
   };
 }
 
+function baseGitlabNoteEvent(): Record<string, unknown> {
+  return {
+    object_kind: "note",
+    project: {
+      path_with_namespace: "acme/platform/repo"
+    },
+    user: {
+      username: "reviewer"
+    },
+    object_attributes: {
+      id: 303,
+      noteable_type: "MergeRequest",
+      note: "Please include one regression check for malformed payload handling."
+    },
+    merge_request: {
+      iid: 17
+    }
+  };
+}
+
+function baseBitbucketPullRequestEvent(): Record<string, unknown> {
+  return {
+    repository: {
+      full_name: "acme-workspace/repo"
+    },
+    actor: {
+      nickname: "maintainer"
+    },
+    pullrequest: {
+      id: 17,
+      description: "Please validate deterministic trust rollouts.",
+      author: {
+        user: {
+          nickname: "maintainer",
+          type: "user"
+        }
+      }
+    }
+  };
+}
+
 test("runSevenShadowSystem loads policy from verified signed bundle", async () => {
   const tempDir = await makeTempDir();
 
@@ -586,6 +627,193 @@ test("runSevenShadowSystem blocks gitlab approval verification when provider tok
     assert.equal(code, 1);
     assert.ok(finding);
     assert.match(finding.message, /GITLAB_TOKEN unavailable/);
+  } finally {
+    await fs.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("runSevenShadowSystem supports gitlab Note Hook payloads that use merge_request iid fallback", async () => {
+  const tempDir = await makeTempDir();
+  const originalFetch = globalThis.fetch;
+
+  try {
+    const policyPath = path.join(tempDir, "policy.json");
+    const eventPath = path.join(tempDir, "event.json");
+    const reportPath = path.join(tempDir, "report.json");
+    const policyBase = basePolicy();
+    const policy = {
+      ...policyBase,
+      approvals: {
+        ...(policyBase.approvals as Record<string, unknown>),
+        minHumanApprovals: 1
+      }
+    };
+
+    await fs.writeFile(policyPath, `${JSON.stringify(policy, null, 2)}\n`, "utf8");
+    await fs.writeFile(eventPath, `${JSON.stringify(baseGitlabNoteEvent(), null, 2)}\n`, "utf8");
+
+    globalThis.fetch = async () =>
+      new Response(
+        JSON.stringify({
+          approved_by: [
+            {
+              user: {
+                username: "reviewer-1",
+                bot: false
+              }
+            }
+          ]
+        }),
+        {
+          status: 200,
+          headers: {
+            "content-type": "application/json"
+          }
+        }
+      );
+
+    const code = await runSevenShadowSystem(
+      [
+        "--policy",
+        policyPath,
+        "--provider",
+        "gitlab",
+        "--event",
+        eventPath,
+        "--event-name",
+        "Note Hook",
+        "--report",
+        reportPath
+      ],
+      { ...process.env, GITLAB_TOKEN: "token", GITHUB_TOKEN: "" }
+    );
+
+    const report = JSON.parse(await fs.readFile(reportPath, "utf8")) as {
+      provider: string;
+      decision: string;
+    };
+    assert.equal(code, 0);
+    assert.equal(report.provider, "gitlab");
+    assert.equal(report.decision, "pass");
+  } finally {
+    globalThis.fetch = originalFetch;
+    await fs.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("runSevenShadowSystem supports --provider bitbucket with provider-specific approval token env", async () => {
+  const tempDir = await makeTempDir();
+  const originalFetch = globalThis.fetch;
+
+  try {
+    const policyPath = path.join(tempDir, "policy.json");
+    const eventPath = path.join(tempDir, "event.json");
+    const reportPath = path.join(tempDir, "report.json");
+    const policyBase = basePolicy();
+    const policy = {
+      ...policyBase,
+      approvals: {
+        ...(policyBase.approvals as Record<string, unknown>),
+        minHumanApprovals: 1
+      }
+    };
+
+    await fs.writeFile(policyPath, `${JSON.stringify(policy, null, 2)}\n`, "utf8");
+    await fs.writeFile(eventPath, `${JSON.stringify(baseBitbucketPullRequestEvent(), null, 2)}\n`, "utf8");
+
+    globalThis.fetch = async () =>
+      new Response(
+        JSON.stringify({
+          participants: [
+            {
+              approved: true,
+              user: {
+                nickname: "reviewer-1",
+                type: "user"
+              }
+            }
+          ]
+        }),
+        {
+          status: 200,
+          headers: {
+            "content-type": "application/json"
+          }
+        }
+      );
+
+    const code = await runSevenShadowSystem(
+      [
+        "--policy",
+        policyPath,
+        "--provider",
+        "bitbucket",
+        "--event",
+        eventPath,
+        "--event-name",
+        "pullrequest:created",
+        "--report",
+        reportPath
+      ],
+      { ...process.env, BITBUCKET_TOKEN: "token", GITHUB_TOKEN: "", GITLAB_TOKEN: "" }
+    );
+
+    const report = JSON.parse(await fs.readFile(reportPath, "utf8")) as {
+      provider: string;
+      decision: string;
+    };
+    assert.equal(code, 0);
+    assert.equal(report.provider, "bitbucket");
+    assert.equal(report.decision, "pass");
+  } finally {
+    globalThis.fetch = originalFetch;
+    await fs.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("runSevenShadowSystem blocks bitbucket approval verification when provider token is missing", async () => {
+  const tempDir = await makeTempDir();
+
+  try {
+    const policyPath = path.join(tempDir, "policy.json");
+    const eventPath = path.join(tempDir, "event.json");
+    const reportPath = path.join(tempDir, "report.json");
+    const policyBase = basePolicy();
+    const policy = {
+      ...policyBase,
+      approvals: {
+        ...(policyBase.approvals as Record<string, unknown>),
+        minHumanApprovals: 1
+      }
+    };
+
+    await fs.writeFile(policyPath, `${JSON.stringify(policy, null, 2)}\n`, "utf8");
+    await fs.writeFile(eventPath, `${JSON.stringify(baseBitbucketPullRequestEvent(), null, 2)}\n`, "utf8");
+
+    const code = await runSevenShadowSystem(
+      [
+        "--policy",
+        policyPath,
+        "--provider",
+        "bitbucket",
+        "--event",
+        eventPath,
+        "--event-name",
+        "pullrequest:created",
+        "--report",
+        reportPath
+      ],
+      { ...process.env, BITBUCKET_TOKEN: "", GITHUB_TOKEN: "", GITLAB_TOKEN: "" }
+    );
+
+    const report = JSON.parse(await fs.readFile(reportPath, "utf8")) as {
+      findings: Array<{ code: string; message: string }>;
+    };
+    const finding = report.findings.find((item) => item.code === "GUARD_APPROVALS_UNVERIFIED");
+
+    assert.equal(code, 1);
+    assert.ok(finding);
+    assert.match(finding.message, /BITBUCKET_TOKEN unavailable/);
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true });
   }
