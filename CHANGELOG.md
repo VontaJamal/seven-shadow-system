@@ -2,6 +2,17 @@
 
 All notable changes to Seven Shadow System are documented in this file.
 
+## 0.3.0-rc.3 - 2026-02-21
+
+### Changed
+
+- npm package identity changed from `@rinshari/seven-shadow-system` to `@rinshari/sss`.
+- Release and release-dry-run workflows now resolve npm dist-tag from package version (`next` for prereleases, `latest` for stable releases).
+
+### Notes
+
+- CI npm publishing still requires an `NPM_TOKEN` that supports package publish with 2FA bypass for automation contexts.
+
 ## 0.3.0-rc.2 - 2026-02-21
 
 ### Fixed

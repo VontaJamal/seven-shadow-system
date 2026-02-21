@@ -6,6 +6,14 @@ It gives maintainers deterministic controls to detect, block, and audit low-trus
 
 ## Quick Start
 
+Package install:
+
+```bash
+npm install @rinshari/sss
+```
+
+Local development:
+
 ```bash
 npm install
 npm test
