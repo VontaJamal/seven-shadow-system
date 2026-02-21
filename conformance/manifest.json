@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    "cases/pass.json",
+    "cases/warn.json",
+    "cases/block.json",
+    "cases/malformed.json",
+    "cases/unsupported-event.json",
+    "cases/oversized-event.json",
+    "cases/approval-unverified.json",
+    "cases/regex-unsafe-policy.json"
+  ]
+}

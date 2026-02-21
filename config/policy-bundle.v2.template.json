@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 2,
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "policySchemaPath": "governance/seven-shadow-system/schemas/policy-v2.schema.json",
+  "policySchemaSha256": "<populate-with-schema-sha256>",
+  "policySha256": "<populate-with-policy-sha256>",
+  "requiredSignatures": 1,
+  "policy": {
+    "version": 2
+  },
+  "signatures": []
+}

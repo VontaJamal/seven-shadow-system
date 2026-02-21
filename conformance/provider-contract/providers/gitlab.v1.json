@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 1,
+  "providerName": "gitlab",
+  "policyContext": {
+    "scanPrBody": true,
+    "scanReviewBody": true,
+    "scanCommentBody": true,
+    "approvals": {
+      "fetchTimeoutMs": 5000,
+      "maxPages": 10
+    }
+  },
+  "extractionCases": [
+    {
+      "name": "extracts merge request description from Merge Request Hook",
+      "eventName": "Merge Request Hook",
+      "payload": {
+        "object_kind": "merge_request",
+        "project": {
+          "path_with_namespace": "acme/platform/repo"
+        },
+        "user": {
+          "username": "maintainer"
+        },
+        "object_attributes": {
+          "id": 101,
+          "iid": 17,
+          "description": "Please review the merge request."
+        }
+      },
+      "expectedSources": ["pr_body"]
+    },
+    {
+      "name": "extracts merge request note body from Note Hook",
+      "eventName": "Note Hook",
+      "payload": {
+        "object_kind": "note",
+        "project": {
+          "path_with_namespace": "acme/platform/repo"
+        },
+        "user": {
+          "username": "reviewer"
+        },
+        "object_attributes": {
+          "id": 202,
+          "note": "Can we add test coverage here?",
+          "noteable_type": "MergeRequest",
+          "noteable_iid": 17
+        }
+      },
+      "expectedSources": ["comment"]
+    }
+  ],
+  "malformedCase": {
+    "name": "flags non merge request note payload as malformed",
+    "eventName": "Note Hook",
+    "payload": {
+      "object_kind": "note",
+      "project": {
+        "path_with_namespace": "acme/platform/repo"
+      },
+      "object_attributes": {
+        "id": 303,
+        "note": "General issue note",
+        "noteable_type": "Issue"
+      }
+    },
+    "expectedSources": ["comment"],
+    "expectedMalformedReasons": [
+      "note is not attached to a merge request",
+      "missing merge request iid"
+    ]
+  },
+  "pullContextCases": [
+    {
+      "name": "extracts pull context from Merge Request Hook",
+      "eventName": "Merge Request Hook",
+      "payload": {
+        "object_kind": "merge_request",
+        "project": {
+          "path_with_namespace": "acme/platform/repo"
+        },
+        "object_attributes": {
+          "iid": 17
+        }
+      },
+      "expected": {
+        "owner": "acme/platform",
+        "repo": "repo",
+        "pullNumber": 17
+      }
+    },
+    {
+      "name": "extracts pull context from merge request note",
+      "eventName": "Note Hook",
+      "payload": {
+        "object_kind": "note",
+        "project": {
+          "path_with_namespace": "acme/platform/repo"
+        },
+        "object_attributes": {
+          "noteable_type": "MergeRequest",
+          "noteable_iid": 19
+        }
+      },
+      "expected": {
+        "owner": "acme/platform",
+        "repo": "repo",
+        "pullNumber": 19
+      }
+    },
+    {
+      "name": "returns null pull context for non merge request note",
+      "eventName": "Note Hook",
+      "payload": {
+        "object_kind": "note",
+        "project": {
+          "path_with_namespace": "acme/platform/repo"
+        },
+        "object_attributes": {
+          "noteable_type": "Issue",
+          "note": "not a merge request note"
+        }
+      },
+      "expected": null
+    }
+  ],
+  "approvalCase": {
+    "name": "counts unique human approvals and ignores allowlisted + bot users",
+    "context": {
+      "owner": "acme/platform",
+      "repo": "repo",
+      "pullNumber": 17
+    },
+    "allowedAuthors": ["trusted-admin"],
+    "expectedApprovals": 1,
+    "fetchTimeoutMs": 5000,
+    "maxPages": 5,
+    "pages": [
+      {
+        "page": 1,
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "approved_by": [
+            {
+              "user": {
+                "username": "trusted-admin",
+                "bot": false
+              }
+            },
+            {
+              "user": {
+                "username": "release-bot",
+                "bot": true
+              }
+            },
+            {
+              "user": {
+                "username": "alice",
+                "bot": false
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "defaultStatus": 200,
+    "defaultHeaders": {
+      "content-type": "application/json"
+    },
+    "defaultBody": {
+      "approved_by": []
+    }
+  }
+}

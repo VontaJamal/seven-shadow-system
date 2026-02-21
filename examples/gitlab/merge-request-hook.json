@@ -1,0 +1,14 @@
+{
+  "object_kind": "merge_request",
+  "project": {
+    "path_with_namespace": "acme/platform/repo"
+  },
+  "user": {
+    "username": "maintainer"
+  },
+  "object_attributes": {
+    "id": 101,
+    "iid": 17,
+    "description": "Please validate deterministic trust gates and edge-case handling."
+  }
+}

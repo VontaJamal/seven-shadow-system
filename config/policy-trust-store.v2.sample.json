@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 2,
+  "signers": [
+    {
+      "id": "maintainer-rsa-v1",
+      "type": "rsa-key",
+      "keyId": "maintainer-v1",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nREPLACE_WITH_OLD_PEM_CONTENT\n-----END PUBLIC KEY-----\n",
+      "state": "retired",
+      "validFrom": "2025-01-01T00:00:00.000Z",
+      "validUntil": "2026-06-01T00:00:00.000Z",
+      "replacedBy": "maintainer-rsa-v2"
+    },
+    {
+      "id": "maintainer-rsa-v2",
+      "type": "rsa-key",
+      "keyId": "maintainer-v2",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nREPLACE_WITH_NEW_PEM_CONTENT\n-----END PUBLIC KEY-----\n",
+      "state": "active",
+      "validFrom": "2026-05-15T00:00:00.000Z",
+      "replaces": "maintainer-rsa-v1"
+    },
+    {
+      "id": "release-keyless",
+      "type": "sigstore-keyless",
+      "certificateIssuer": "https://token.actions.githubusercontent.com",
+      "certificateIdentityURI": "https://github.com/VontaJamal/seven-shadow-system/.github/workflows/release.yml@refs/tags/v0.2.0",
+      "state": "active"
+    },
+    {
+      "id": "compromised-key",
+      "type": "rsa-key",
+      "keyId": "maintainer-compromised",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nREVOKED_PEM_CONTENT\n-----END PUBLIC KEY-----\n",
+      "state": "revoked"
+    }
+  ]
+}

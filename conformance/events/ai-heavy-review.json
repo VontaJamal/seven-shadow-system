@@ -1,0 +1,21 @@
+{
+  "repository": {
+    "full_name": "acme/repo"
+  },
+  "pull_request": {
+    "number": 8,
+    "body": "PR body text.",
+    "user": {
+      "login": "repo-owner",
+      "type": "User"
+    }
+  },
+  "review": {
+    "id": 12,
+    "body": "As an AI language model, I think this is great work.",
+    "user": {
+      "login": "reviewer-two",
+      "type": "User"
+    }
+  }
+}

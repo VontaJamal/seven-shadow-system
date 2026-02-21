@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rinshari.dev/seven-shadow-system/schemas/override-constraints-v1.schema.json",
+  "title": "Seven Shadow Policy Override Constraints v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "allowedOverridePaths", "forbiddenOverridePaths"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "allowedOverridePaths": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "forbiddenOverridePaths": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

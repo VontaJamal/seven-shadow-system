@@ -1,0 +1,46 @@
+name: RC Soak
+
+on:
+  workflow_dispatch:
+    inputs:
+      iterations:
+        description: Replay iterations for deterministic soak checks
+        required: false
+        default: "72"
+  push:
+    tags:
+      - "v*-rc.*"
+
+permissions:
+  contents: read
+
+jobs:
+  rc-soak:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+
+      - name: Setup Node
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run deterministic RC soak replay
+        env:
+          SOAK_ITERATIONS: ${{ github.event.inputs.iterations }}
+        run: |
+          set -euo pipefail
+          iterations="${SOAK_ITERATIONS:-72}"
+          npm run soak:rc -- --iterations "$iterations" --report rc-soak-report.json
+
+      - name: Upload RC soak report
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        with:
+          name: rc-soak-report
+          path: rc-soak-report.json

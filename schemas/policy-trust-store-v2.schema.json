@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rinshari.dev/seven-shadow-system/schemas/policy-trust-store-v2.schema.json",
+  "title": "Seven Shadow Policy Trust Store v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "signers"],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "signers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "type", "keyId", "publicKeyPem", "state"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "type": { "const": "rsa-key" },
+              "keyId": { "type": "string", "minLength": 1 },
+              "publicKeyPem": { "type": "string", "minLength": 1 },
+              "state": { "type": "string", "enum": ["active", "retired", "revoked"] },
+              "validFrom": { "type": "string", "format": "date-time" },
+              "validUntil": { "type": "string", "format": "date-time" },
+              "replaces": { "type": "string", "minLength": 1 },
+              "replacedBy": { "type": "string", "minLength": 1 }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "type", "certificateIssuer", "certificateIdentityURI", "state"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "type": { "const": "sigstore-keyless" },
+              "certificateIssuer": { "type": "string", "minLength": 1 },
+              "certificateIdentityURI": { "type": "string", "minLength": 1 },
+              "state": { "type": "string", "enum": ["active", "retired", "revoked"] },
+              "validFrom": { "type": "string", "format": "date-time" },
+              "validUntil": { "type": "string", "format": "date-time" },
+              "replaces": { "type": "string", "minLength": 1 },
+              "replacedBy": { "type": "string", "minLength": 1 }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

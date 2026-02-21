@@ -1,0 +1,7 @@
+{
+  "numRuns": 100,
+  "maxSkipsPerRun": 200,
+  "seed": 1337,
+  "maxPayloadBytes": 1000000,
+  "maxRuntimeMs": 15000
+}

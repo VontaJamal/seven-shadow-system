@@ -1,0 +1,8 @@
+{
+  "id": "regex-unsafe-policy",
+  "description": "Unsafe regex should fail policy load.",
+  "eventName": "pull_request_review",
+  "event": "events/pass.json",
+  "policy": "policies/regex-unsafe.json",
+  "expectedErrorContains": "E_UNSAFE_RULE_REGEX"
+}

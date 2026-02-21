@@ -1,0 +1,11 @@
+{
+  "id": "block",
+  "description": "Blocking rule in block mode should block.",
+  "eventName": "pull_request_review",
+  "event": "events/ai-heavy-review.json",
+  "policy": "policies/block.json",
+  "expectedDecision": "block",
+  "expectedFindingCodes": [
+    "GUARD_RULE_BLOCK"
+  ]
+}

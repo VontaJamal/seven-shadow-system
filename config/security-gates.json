@@ -1,0 +1,12 @@
+{
+  "dependencyReview": {
+    "failOnSeverity": "moderate"
+  },
+  "scorecard": {
+    "minimumScore": 8,
+    "perCheckMinimums": {
+      "Token-Permissions": 8,
+      "Code-Review": 8
+    }
+  }
+}

@@ -1,0 +1,117 @@
+name: "Seven Shadow System Guard"
+description: "Run Seven Shadow System from a governance submodule using fail-closed defaults."
+
+inputs:
+  submodule-path:
+    description: "Path to the seven-shadow-system submodule in the current repository"
+    required: false
+    default: "governance/seven-shadow-system"
+  policy-path:
+    description: "Path to the policy file in the consumer repository"
+    required: false
+    default: ".seven-shadow/policy.json"
+  policy-bundle-path:
+    description: "Optional path to a signed policy bundle (enables bundle verification mode)"
+    required: false
+    default: ""
+  policy-schema-path:
+    description: "Optional policy schema path for bundle verification mode"
+    required: false
+    default: ""
+  policy-trust-store-path:
+    description: "Optional trust store path for bundle verification mode"
+    required: false
+    default: ""
+  policy-public-keys:
+    description: "Optional newline-delimited keyId=path entries for bundle verification mode"
+    required: false
+    default: ""
+  report-path:
+    description: "Base path for generated reports"
+    required: false
+    default: ".seven-shadow/reports/github-report"
+  report-format:
+    description: "Report format: json, markdown, sarif, or all"
+    required: false
+    default: "all"
+  provider:
+    description: "Provider adapter to use (github, gitlab, or bitbucket)"
+    required: false
+    default: "github"
+  provider-token:
+    description: "Optional provider API token for non-GitHub adapters (used as GITLAB_TOKEN and BITBUCKET_TOKEN)"
+    required: false
+    default: ""
+  redact:
+    description: "Redact report body text"
+    required: false
+    default: "true"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node
+      uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
+      with:
+        node-version: "20"
+        cache: "npm"
+        cache-dependency-path: ${{ inputs.submodule-path }}/package-lock.json
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ inputs.submodule-path }}
+      run: npm ci
+
+    - name: Build Seven Shadow System
+      shell: bash
+      working-directory: ${{ inputs.submodule-path }}
+      run: npm run build
+
+    - name: Run Seven Shadow System
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        GITLAB_TOKEN: ${{ inputs.provider-token }}
+        BITBUCKET_TOKEN: ${{ inputs.provider-token }}
+      run: |
+        REDACT_FLAG=()
+        if [[ "${{ inputs.redact }}" == "true" ]]; then
+          REDACT_FLAG=(--redact)
+        fi
+
+        POLICY_ARGS=(--policy "${{ inputs.policy-path }}")
+        BUNDLE_PATH="${{ inputs.policy-bundle-path }}"
+        SCHEMA_PATH="${{ inputs.policy-schema-path }}"
+        TRUST_STORE_PATH="${{ inputs.policy-trust-store-path }}"
+        PUBLIC_KEYS_RAW="${{ inputs.policy-public-keys }}"
+
+        if [[ -n "$BUNDLE_PATH" ]]; then
+          if [[ -z "$SCHEMA_PATH" ]]; then
+            SCHEMA_PATH="${{ inputs.submodule-path }}/schemas/policy-v2.schema.json"
+          fi
+
+          POLICY_ARGS=(--policy-bundle "$BUNDLE_PATH" --policy-schema "$SCHEMA_PATH")
+
+          if [[ -n "$TRUST_STORE_PATH" ]]; then
+            POLICY_ARGS+=(--policy-trust-store "$TRUST_STORE_PATH")
+          elif [[ -n "$PUBLIC_KEYS_RAW" ]]; then
+            while IFS= read -r line; do
+              if [[ -z "${line//[[:space:]]/}" ]]; then
+                continue
+              fi
+              POLICY_ARGS+=(--policy-public-key "$line")
+            done <<< "$PUBLIC_KEYS_RAW"
+          else
+            echo "Bundle mode requires either policy-trust-store-path or policy-public-keys."
+            exit 1
+          fi
+        fi
+
+        node "${{ inputs.submodule-path }}/dist/src/sevenShadowSystem.js" \
+          --provider "${{ inputs.provider }}" \
+          "${POLICY_ARGS[@]}" \
+          --event "$GITHUB_EVENT_PATH" \
+          --event-name "$GITHUB_EVENT_NAME" \
+          --report "${{ inputs.report-path }}" \
+          --report-format "${{ inputs.report-format }}" \
+          "${REDACT_FLAG[@]}"

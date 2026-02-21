@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "allowedOverridePaths": [
+    "blockedAuthors",
+    "allowedAuthors",
+    "scanPrBody",
+    "scanReviewBody",
+    "scanCommentBody",
+    "runtime.maxBodyChars",
+    "runtime.maxTargets",
+    "runtime.maxEventBytes",
+    "report.includeBodies",
+    "report.redactionMode",
+    "approvals.minHumanApprovals",
+    "approvals.fetchTimeoutMs",
+    "approvals.maxPages",
+    "approvals.retry",
+    "rules"
+  ],
+  "forbiddenOverridePaths": [
+    "version",
+    "enforcement",
+    "blockBotAuthors",
+    "maxAiScore",
+    "disclosureTag",
+    "disclosureRequiredScore",
+    "runtime.failOnUnsupportedEvent",
+    "runtime.failOnMalformedPayload"
+  ]
+}

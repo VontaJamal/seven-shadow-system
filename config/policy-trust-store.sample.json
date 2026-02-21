@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "signers": [
+    {
+      "id": "maintainer-rsa",
+      "type": "rsa-key",
+      "keyId": "maintainer",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nREPLACE_WITH_PEM_CONTENT\n-----END PUBLIC KEY-----\n"
+    },
+    {
+      "id": "release-keyless",
+      "type": "sigstore-keyless",
+      "certificateIssuer": "https://token.actions.githubusercontent.com",
+      "certificateIdentityURI": "https://github.com/VontaJamal/seven-shadow-system/.github/workflows/release.yml@refs/tags/v0.2.0"
+    }
+  ]
+}

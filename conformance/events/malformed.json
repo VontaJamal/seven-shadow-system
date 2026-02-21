@@ -1,0 +1,10 @@
+{
+  "pull_request": {
+    "number": 3,
+    "body": "Missing repository metadata",
+    "user": {
+      "login": "repo-owner",
+      "type": "User"
+    }
+  }
+}

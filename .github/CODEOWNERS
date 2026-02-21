@@ -1,0 +1,10 @@
+# Global ownership
+* @VontaJamal
+
+# Critical governance/runtime surfaces
+/src/sevenShadowSystem.ts @VontaJamal
+/src/providers/ @VontaJamal
+/config/ @VontaJamal
+/templates/workflows/ @VontaJamal
+/.github/workflows/ @VontaJamal
+/scripts/wire-submodule.sh @VontaJamal

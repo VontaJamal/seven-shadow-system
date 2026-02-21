@@ -1,0 +1,64 @@
+name: Supply Chain
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@05fe4576374b728f0c523d6a13d64c25081e0803
+        with:
+          config-file: ./.github/dependency-review-config.yml
+
+  scorecard:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      security-events: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+
+      - name: Scorecard Analysis
+        uses: ossf/scorecard-action@4eaacf0543bb3f2c246792bd56e8cdeffafb205a
+        with:
+          results_file: scorecard-results.json
+          results_format: json
+          publish_results: false
+
+      - name: Setup Node
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Evaluate Scorecard Security Gate
+        run: node dist/scripts/evaluate-scorecard.js --results scorecard-results.json --config config/security-gates.json
+
+      - name: Upload scorecard artifact
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        with:
+          name: scorecard-results
+          path: scorecard-results.json
