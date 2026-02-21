@@ -42,8 +42,25 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          POLICY_ARGS=(--policy .seven-shadow/policy.json)
+
+          if [[ -f .seven-shadow/policy.bundle.json ]]; then
+            POLICY_ARGS=(
+              --policy-bundle .seven-shadow/policy.bundle.json
+              --policy-schema governance/seven-shadow-system/schemas/policy-v2.schema.json
+            )
+
+            if [[ -f .seven-shadow/policy-trust-store.json ]]; then
+              POLICY_ARGS+=(--policy-trust-store .seven-shadow/policy-trust-store.json)
+            else
+              echo "Found .seven-shadow/policy.bundle.json but missing .seven-shadow/policy-trust-store.json"
+              echo "Either add the trust store file or switch back to .seven-shadow/policy.json mode."
+              exit 1
+            fi
+          fi
+
           node governance/seven-shadow-system/dist/src/sevenShadowSystem.js \
-            --policy .seven-shadow/policy.json \
+            "${POLICY_ARGS[@]}" \
             --event "$GITHUB_EVENT_PATH" \
             --event-name "$GITHUB_EVENT_NAME" \
             --report .seven-shadow/reports/github-report \

@@ -140,6 +140,164 @@ test("runSevenShadowSystem loads policy from verified signed bundle", async () =
   }
 });
 
+test("runSevenShadowSystem loads policy from trust-store verified bundle", async () => {
+  const tempDir = await makeTempDir();
+
+  try {
+    const bundlePath = path.join(tempDir, "policy.bundle.json");
+    const trustStorePath = path.join(tempDir, "trust-store.json");
+    const eventPath = path.join(tempDir, "event.json");
+    const reportPath = path.join(tempDir, "report.json");
+    const schemaPath = path.join(process.cwd(), "schemas", "policy-v2.schema.json");
+
+    const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", { modulusLength: 2048 });
+
+    const schemaRaw = await fs.readFile(schemaPath, "utf8");
+    const unsignedBundle = buildPolicyBundleTemplate({
+      schemaVersion: 2,
+      policy: basePolicy(),
+      policySchemaPath: schemaPath,
+      policySchemaSha256: sha256Hex(schemaRaw),
+      requiredSignatures: 1,
+      createdAt: "2026-02-21T00:00:00.000Z"
+    });
+    const signedBundle = signPolicyBundle(
+      unsignedBundle,
+      "maintainer",
+      privateKey.export({ type: "pkcs1", format: "pem" }).toString()
+    );
+
+    const trustStore = {
+      schemaVersion: 2,
+      signers: [
+        {
+          id: "maintainer-rsa",
+          type: "rsa-key",
+          keyId: "maintainer",
+          publicKeyPem: publicKey.export({ type: "pkcs1", format: "pem" }).toString(),
+          state: "active"
+        }
+      ]
+    };
+
+    await fs.writeFile(bundlePath, `${JSON.stringify(signedBundle, null, 2)}\n`, "utf8");
+    await fs.writeFile(trustStorePath, `${JSON.stringify(trustStore, null, 2)}\n`, "utf8");
+    await fs.writeFile(eventPath, `${JSON.stringify(baseEvent(), null, 2)}\n`, "utf8");
+
+    const exitCode = await runSevenShadowSystem(
+      [
+        "--policy-bundle",
+        bundlePath,
+        "--policy-schema",
+        schemaPath,
+        "--policy-trust-store",
+        trustStorePath,
+        "--event",
+        eventPath,
+        "--event-name",
+        "pull_request_review",
+        "--report",
+        reportPath
+      ],
+      process.env
+    );
+
+    const report = JSON.parse(await fs.readFile(reportPath, "utf8")) as { decision: string; policyPath: string };
+    assert.equal(exitCode, 0);
+    assert.equal(report.decision, "pass");
+    assert.equal(report.policyPath, bundlePath);
+  } finally {
+    await fs.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("runSevenShadowSystem rejects conflicting bundle trust inputs", async () => {
+  await assert.rejects(
+    () =>
+      runSevenShadowSystem(
+        [
+          "--policy-bundle",
+          "bundle.json",
+          "--policy-schema",
+          "schema.json",
+          "--policy-trust-store",
+          "trust-store.json",
+          "--policy-public-key",
+          "maintainer=keys/maintainer.pub"
+        ],
+        process.env
+      ),
+    /E_ARG_CONFLICT: --policy-trust-store cannot be used with --policy-public-key/
+  );
+});
+
+test("runSevenShadowSystem blocks bundles that include revoked signer signatures", async () => {
+  const tempDir = await makeTempDir();
+
+  try {
+    const bundlePath = path.join(tempDir, "policy.bundle.json");
+    const trustStorePath = path.join(tempDir, "trust-store.json");
+    const eventPath = path.join(tempDir, "event.json");
+    const schemaPath = path.join(process.cwd(), "schemas", "policy-v2.schema.json");
+
+    const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", { modulusLength: 2048 });
+
+    const schemaRaw = await fs.readFile(schemaPath, "utf8");
+    const unsignedBundle = buildPolicyBundleTemplate({
+      schemaVersion: 2,
+      policy: basePolicy(),
+      policySchemaPath: schemaPath,
+      policySchemaSha256: sha256Hex(schemaRaw),
+      requiredSignatures: 1,
+      createdAt: "2026-02-21T00:00:00.000Z"
+    });
+    const signedBundle = signPolicyBundle(
+      unsignedBundle,
+      "maintainer",
+      privateKey.export({ type: "pkcs1", format: "pem" }).toString()
+    );
+
+    const trustStore = {
+      schemaVersion: 2,
+      signers: [
+        {
+          id: "maintainer-rsa",
+          type: "rsa-key",
+          keyId: "maintainer",
+          publicKeyPem: publicKey.export({ type: "pkcs1", format: "pem" }).toString(),
+          state: "revoked"
+        }
+      ]
+    };
+
+    await fs.writeFile(bundlePath, `${JSON.stringify(signedBundle, null, 2)}\n`, "utf8");
+    await fs.writeFile(trustStorePath, `${JSON.stringify(trustStore, null, 2)}\n`, "utf8");
+    await fs.writeFile(eventPath, `${JSON.stringify(baseEvent(), null, 2)}\n`, "utf8");
+
+    await assert.rejects(
+      () =>
+        runSevenShadowSystem(
+          [
+            "--policy-bundle",
+            bundlePath,
+            "--policy-schema",
+            schemaPath,
+            "--policy-trust-store",
+            trustStorePath,
+            "--event",
+            eventPath,
+            "--event-name",
+            "pull_request_review"
+          ],
+          process.env
+        ),
+      /E_POLICY_TRUST_SIGNER_REVOKED/
+    );
+  } finally {
+    await fs.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
 test("runSevenShadowSystem merges org policy with local overrides and blocks forbidden overrides", async () => {
   const tempDir = await makeTempDir();
 

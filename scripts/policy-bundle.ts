@@ -4,12 +4,15 @@ import path from "node:path";
 import {
   buildPolicyBundleTemplate,
   parsePolicyBundle,
+  parsePolicyTrustStore,
   sha256Hex,
   signPolicyBundle,
-  verifyPolicyBundle
+  signPolicyBundleKeyless,
+  verifyPolicyBundle,
+  verifyPolicyBundleWithTrustStore
 } from "../src/policyGovernance";
 
-type Command = "create" | "sign" | "verify";
+type Command = "create" | "sign" | "sign-keyless" | "verify";
 
 interface ParsedCli {
   command: Command;
@@ -18,8 +21,8 @@ interface ParsedCli {
 
 function parseCli(argv: string[]): ParsedCli {
   const command = argv[0];
-  if (command !== "create" && command !== "sign" && command !== "verify") {
-    throw new Error("Usage: policy-bundle <create|sign|verify> [options]");
+  if (command !== "create" && command !== "sign" && command !== "sign-keyless" && command !== "verify") {
+    throw new Error("Usage: policy-bundle <create|sign|sign-keyless|verify> [options]");
   }
 
   const options = new Map<string, string[]>();
@@ -63,6 +66,30 @@ function parsePositiveInt(value: string, key: string): number {
   }
 
   return parsed;
+}
+
+function parseBooleanStrict(value: string, optionName: string): boolean {
+  if (value === "true") {
+    return true;
+  }
+
+  if (value === "false") {
+    return false;
+  }
+
+  throw new Error(`E_ARG_INVALID_BOOLEAN: ${optionName} must be true|false`);
+}
+
+function parseSchemaVersion(value: string): 1 | 2 {
+  if (value === "1") {
+    return 1;
+  }
+
+  if (value === "2") {
+    return 2;
+  }
+
+  throw new Error("E_ARG_INVALID: --schema-version must be 1 or 2");
 }
 
 function parseKeySpec(value: string): { keyId: string; keyPath: string } {
@@ -109,6 +136,7 @@ async function commandCreate(options: Map<string, string[]>): Promise<void> {
   const outputPath = requireOption(options, "--output");
   const requiredSignatures = parsePositiveInt(requireOption(options, "--required-signatures"), "--required-signatures");
   const createdAt = options.get("--created-at")?.[0];
+  const schemaVersion = parseSchemaVersion(options.get("--schema-version")?.[0] ?? "1");
 
   const policy = await loadJsonObject(policyPath, "--policy");
   const schemaRaw = await fs.readFile(schemaPath, "utf8");
@@ -118,6 +146,7 @@ async function commandCreate(options: Map<string, string[]>): Promise<void> {
     policySchemaPath: schemaPath,
     policySchemaSha256: sha256Hex(schemaRaw),
     requiredSignatures,
+    schemaVersion,
     ...(createdAt ? { createdAt } : {})
   });
 
@@ -139,13 +168,73 @@ async function commandSign(options: Map<string, string[]>): Promise<void> {
   console.log(`Signed policy bundle written to ${outputPath}`);
 }
 
+async function commandSignKeyless(options: Map<string, string[]>): Promise<void> {
+  const bundlePath = requireOption(options, "--bundle");
+  const outputPath = options.get("--output")?.[0] ?? bundlePath;
+  const signerId = requireOption(options, "--signer-id");
+
+  const bundle = parsePolicyBundle(await loadJson(bundlePath));
+  if (bundle.schemaVersion !== 2) {
+    throw new Error("E_POLICY_BUNDLE_VERSION_REQUIRED: sign-keyless requires a schemaVersion=2 bundle");
+  }
+
+  const sigstoreOptions: Record<string, unknown> = {};
+  const fulcioURL = options.get("--fulcio-url")?.[0];
+  const rekorURL = options.get("--rekor-url")?.[0];
+  const tsaServerURL = options.get("--tsa-url")?.[0];
+  const tlogUploadValue = options.get("--tlog-upload")?.[0];
+  const identityToken = options.get("--identity-token")?.[0];
+
+  if (fulcioURL) {
+    sigstoreOptions.fulcioURL = fulcioURL;
+  }
+
+  if (rekorURL) {
+    sigstoreOptions.rekorURL = rekorURL;
+  }
+
+  if (tsaServerURL) {
+    sigstoreOptions.tsaServerURL = tsaServerURL;
+  }
+
+  if (tlogUploadValue) {
+    sigstoreOptions.tlogUpload = parseBooleanStrict(tlogUploadValue, "--tlog-upload");
+  }
+
+  if (identityToken) {
+    sigstoreOptions.identityToken = identityToken;
+  }
+
+  const signed = await signPolicyBundleKeyless(bundle, signerId, sigstoreOptions);
+
+  await writeJson(outputPath, signed);
+  console.log(`Keyless-signed policy bundle written to ${outputPath}`);
+}
+
 async function commandVerify(options: Map<string, string[]>): Promise<void> {
   const bundlePath = requireOption(options, "--bundle");
   const schemaPath = requireOption(options, "--schema");
+  const trustStorePath = options.get("--trust-store")?.[0];
   const publicKeySpecs = options.get("--public-key") ?? [];
 
+  if (trustStorePath && publicKeySpecs.length > 0) {
+    throw new Error("E_ARG_CONFLICT: --trust-store cannot be combined with --public-key");
+  }
+
+  const bundle = parsePolicyBundle(await loadJson(bundlePath));
+  const schemaRaw = await fs.readFile(schemaPath, "utf8");
+
+  if (trustStorePath) {
+    const trustStore = parsePolicyTrustStore(await loadJson(trustStorePath));
+    const verification = await verifyPolicyBundleWithTrustStore(bundle, trustStore, sha256Hex(schemaRaw));
+    console.log(
+      `Policy bundle verified with trust store. Valid signatures: ${verification.validSignatures.join(", ")} (required=${bundle.requiredSignatures})`
+    );
+    return;
+  }
+
   if (publicKeySpecs.length === 0) {
-    throw new Error("E_ARG_REQUIRED: at least one --public-key keyId=path is required");
+    throw new Error("E_ARG_REQUIRED: provide either --trust-store <path> or at least one --public-key keyId=path");
   }
 
   const trustedPublicKeys: Record<string, string> = {};
@@ -157,8 +246,6 @@ async function commandVerify(options: Map<string, string[]>): Promise<void> {
     trustedPublicKeys[parsed.keyId] = await fs.readFile(parsed.keyPath, "utf8");
   }
 
-  const bundle = parsePolicyBundle(await loadJson(bundlePath));
-  const schemaRaw = await fs.readFile(schemaPath, "utf8");
   const verification = verifyPolicyBundle(bundle, trustedPublicKeys, sha256Hex(schemaRaw));
 
   console.log(
@@ -175,6 +262,11 @@ async function run(): Promise<void> {
 
   if (parsed.command === "sign") {
     await commandSign(parsed.options);
+    return;
+  }
+
+  if (parsed.command === "sign-keyless") {
+    await commandSignKeyless(parsed.options);
     return;
   }
 

@@ -10,8 +10,10 @@ import {
   mergePoliciesWithConstraints,
   parseOverrideConstraints,
   parsePolicyBundle,
+  parsePolicyTrustStore,
   sha256Hex,
   toReplayComparable,
+  verifyPolicyBundleWithTrustStore,
   verifyPolicyBundle,
   type PolicyOverrideConstraints
 } from "./policyGovernance";
@@ -125,6 +127,7 @@ interface ParsedArgs {
   policyPath: string;
   policyBundlePath?: string;
   policySchemaPath?: string;
+  policyTrustStorePath?: string;
   policyPublicKeySpecs: string[];
   orgPolicyPath?: string;
   localPolicyPath?: string;
@@ -309,6 +312,16 @@ function parseArgs(argv: string[]): ParsedArgs {
       continue;
     }
 
+    if (token === "--policy-trust-store") {
+      const value = argv[i + 1];
+      if (!value || value.startsWith("--")) {
+        throw new Error("E_ARG_VALUE_REQUIRED: --policy-trust-store");
+      }
+      args.policyTrustStorePath = value;
+      i += 1;
+      continue;
+    }
+
     if (token === "--org-policy") {
       const value = argv[i + 1];
       if (!value || value.startsWith("--")) {
@@ -457,8 +470,16 @@ function parseArgs(argv: string[]): ParsedArgs {
     throw new Error("E_ARG_CONFLICT: --policy-public-key requires --policy-bundle");
   }
 
+  if (!args.policyBundlePath && args.policyTrustStorePath) {
+    throw new Error("E_ARG_CONFLICT: --policy-trust-store requires --policy-bundle");
+  }
+
   if (!args.policyBundlePath && args.policySchemaPath) {
     throw new Error("E_ARG_CONFLICT: --policy-schema requires --policy-bundle");
+  }
+
+  if (args.policyTrustStorePath && args.policyPublicKeySpecs.length > 0) {
+    throw new Error("E_ARG_CONFLICT: --policy-trust-store cannot be used with --policy-public-key");
   }
 
   if (!args.orgPolicyPath && args.localPolicyPath) {
@@ -593,17 +614,25 @@ async function loadOverrideConstraints(args: ParsedArgs): Promise<PolicyOverride
 
 async function resolvePolicyMaterial(args: ParsedArgs): Promise<ResolvedPolicyMaterial> {
   if (args.policyBundlePath) {
-    if (args.policyPublicKeySpecs.length === 0) {
-      throw new Error("E_POLICY_BUNDLE_KEYS_REQUIRED: provide --policy-public-key keyId=path");
-    }
-
     const bundleRaw = await loadJsonFile(args.policyBundlePath);
     const bundle = parsePolicyBundle(bundleRaw);
-    const trustedPublicKeys = await loadTrustedPublicKeys(args.policyPublicKeySpecs);
-
     const schemaPath = args.policySchemaPath ?? path.join(process.cwd(), "schemas", "policy-v2.schema.json");
     const schemaRaw = await fs.readFile(schemaPath, "utf8");
-    verifyPolicyBundle(bundle, trustedPublicKeys, sha256Hex(schemaRaw));
+
+    if (args.policyTrustStorePath) {
+      const trustStoreRaw = await loadJsonFile(args.policyTrustStorePath);
+      const trustStore = parsePolicyTrustStore(trustStoreRaw);
+      await verifyPolicyBundleWithTrustStore(bundle, trustStore, sha256Hex(schemaRaw));
+    } else {
+      if (args.policyPublicKeySpecs.length === 0) {
+        throw new Error(
+          "E_POLICY_BUNDLE_TRUST_REQUIRED: provide --policy-public-key keyId=path or --policy-trust-store <path>"
+        );
+      }
+
+      const trustedPublicKeys = await loadTrustedPublicKeys(args.policyPublicKeySpecs);
+      verifyPolicyBundle(bundle, trustedPublicKeys, sha256Hex(schemaRaw));
+    }
 
     return {
       policyRaw: bundle.policy,
