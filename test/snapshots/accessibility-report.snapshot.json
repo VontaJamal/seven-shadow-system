@@ -1,0 +1,77 @@
+{
+  "report": {
+    "schemaVersion": 2,
+    "timestamp": "<timestamp>",
+    "provider": "github",
+    "eventName": "pull_request_review",
+    "policyPath": "<policy-path>",
+    "policyVersion": 2,
+    "enforcement": "block",
+    "decision": "pass",
+    "targetsScanned": 2,
+    "highestAiScore": 0.3,
+    "humanApprovals": {
+      "required": 0,
+      "actual": null,
+      "checked": false
+    },
+    "findings": [],
+    "targets": [
+      {
+        "source": "pr_body",
+        "referenceId": "pr:42",
+        "authorLogin": "repo-owner",
+        "authorType": "User",
+        "aiScore": 0,
+        "matchedRules": [],
+        "findingCodes": [],
+        "bodyHash": "24b75b15d4ed18502b72f51a3622bd50754455c07c0b88d6aadbfcc360f20f45"
+      },
+      {
+        "source": "review",
+        "referenceId": "review:13",
+        "authorLogin": "human-reviewer",
+        "authorType": "User",
+        "aiScore": 0.3,
+        "matchedRules": [
+          "generic-template-great-work"
+        ],
+        "findingCodes": [],
+        "bodyHash": "c6e94b77d0fd952608d5cccb044d7fa3686bff4f64903a0514cc0c3e91bc4c8d"
+      }
+    ],
+    "evidenceHashes": {
+      "pr:42": "24b75b15d4ed18502b72f51a3622bd50754455c07c0b88d6aadbfcc360f20f45",
+      "review:13": "c6e94b77d0fd952608d5cccb044d7fa3686bff4f64903a0514cc0c3e91bc4c8d"
+    },
+    "accessibilitySummary": {
+      "plainLanguageDecision": "Pass: policy checks completed and no blocking findings were detected.",
+      "statusWords": {
+        "pass": "Pass",
+        "warn": "Warn",
+        "block": "Block"
+      },
+      "nonColorStatusSignals": true,
+      "screenReaderFriendly": true,
+      "cognitiveLoad": "low"
+    },
+    "generatedReports": []
+  },
+  "markdown": "# Seven Shadow System Report\n\n- Decision: **PASS**\n- Event: `pull_request_review`\n- Provider: `github`\n- Findings: 0\n- Targets Scanned: 2\n- Highest AI Score: 0.300\n\n## Plain Language Summary\n\nPass: policy checks completed and no blocking findings were detected.\n\n## Findings\n\nNo findings.\n\n## Target Evidence Hashes\n\n- `pr:42`: `24b75b15d4ed18502b72f51a3622bd50754455c07c0b88d6aadbfcc360f20f45`\n- `review:13`: `c6e94b77d0fd952608d5cccb044d7fa3686bff4f64903a0514cc0c3e91bc4c8d`\n\n",
+  "sarif": {
+    "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+    "version": "2.1.0",
+    "runs": [
+      {
+        "tool": {
+          "driver": {
+            "name": "Seven Shadow System",
+            "informationUri": "https://github.com/VontaJamal/seven-shadow-system",
+            "rules": []
+          }
+        },
+        "results": []
+      }
+    ]
+  }
+}

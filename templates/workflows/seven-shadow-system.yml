@@ -8,6 +8,10 @@ on:
   issue_comment:
     types: [created, edited]
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   guard:
     if: github.event_name != 'issue_comment' || github.event.issue.pull_request != null
@@ -15,12 +19,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
         with:
           submodules: recursive
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
         with:
           node-version: "20"
           cache: "npm"
@@ -42,11 +46,16 @@ jobs:
             --policy .seven-shadow/policy.json \
             --event "$GITHUB_EVENT_PATH" \
             --event-name "$GITHUB_EVENT_NAME" \
-            --report .seven-shadow/reports/github-report.json
+            --report .seven-shadow/reports/github-report \
+            --report-format all \
+            --redact
 
       - name: Upload report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
         with:
           name: seven-shadow-system-report
-          path: .seven-shadow/reports/github-report.json
+          path: |
+            .seven-shadow/reports/github-report.json
+            .seven-shadow/reports/github-report.md
+            .seven-shadow/reports/github-report.sarif

@@ -1,0 +1,67 @@
+name: "Seven Shadow System Guard"
+description: "Run Seven Shadow System from a governance submodule using fail-closed defaults."
+
+inputs:
+  submodule-path:
+    description: "Path to the seven-shadow-system submodule in the current repository"
+    required: false
+    default: "governance/seven-shadow-system"
+  policy-path:
+    description: "Path to the policy file in the consumer repository"
+    required: false
+    default: ".seven-shadow/policy.json"
+  report-path:
+    description: "Base path for generated reports"
+    required: false
+    default: ".seven-shadow/reports/github-report"
+  report-format:
+    description: "Report format: json, markdown, sarif, or all"
+    required: false
+    default: "all"
+  provider:
+    description: "Provider adapter to use"
+    required: false
+    default: "github"
+  redact:
+    description: "Redact report body text"
+    required: false
+    default: "true"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node
+      uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
+      with:
+        node-version: "20"
+        cache: "npm"
+        cache-dependency-path: ${{ inputs.submodule-path }}/package-lock.json
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ inputs.submodule-path }}
+      run: npm ci
+
+    - name: Build Seven Shadow System
+      shell: bash
+      working-directory: ${{ inputs.submodule-path }}
+      run: npm run build
+
+    - name: Run Seven Shadow System
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        REDACT_FLAG=""
+        if [[ "${{ inputs.redact }}" == "true" ]]; then
+          REDACT_FLAG="--redact"
+        fi
+
+        node "${{ inputs.submodule-path }}/dist/src/sevenShadowSystem.js" \
+          --provider "${{ inputs.provider }}" \
+          --policy "${{ inputs.policy-path }}" \
+          --event "$GITHUB_EVENT_PATH" \
+          --event-name "$GITHUB_EVENT_NAME" \
+          --report "${{ inputs.report-path }}" \
+          --report-format "${{ inputs.report-format }}" \
+          $REDACT_FLAG

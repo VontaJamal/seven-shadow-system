@@ -1,0 +1,44 @@
+{
+  "version": 2,
+  "enforcement": "block",
+  "blockBotAuthors": true,
+  "blockedAuthors": [],
+  "allowedAuthors": [],
+  "scanPrBody": true,
+  "scanReviewBody": true,
+  "scanCommentBody": true,
+  "maxAiScore": 0.9,
+  "disclosureTag": "[AI-ASSISTED]",
+  "disclosureRequiredScore": 0.95,
+  "runtime": {
+    "failOnUnsupportedEvent": true,
+    "failOnMalformedPayload": true,
+    "maxBodyChars": 12000,
+    "maxTargets": 25,
+    "maxEventBytes": 1024
+  },
+  "report": {
+    "includeBodies": false,
+    "redactionMode": "hash"
+  },
+  "approvals": {
+    "minHumanApprovals": 0,
+    "fetchTimeoutMs": 10000,
+    "maxPages": 10,
+    "retry": {
+      "enabled": true,
+      "maxAttempts": 3,
+      "baseDelayMs": 250,
+      "maxDelayMs": 2500,
+      "jitterRatio": 0.2,
+      "retryableStatusCodes": [429, 500, 502, 503, 504]
+    }
+  },
+  "rules": [
+    {
+      "name": "explicit-ai-disclaimer",
+      "pattern": "as an ai language model",
+      "action": "block"
+    }
+  ]
+}

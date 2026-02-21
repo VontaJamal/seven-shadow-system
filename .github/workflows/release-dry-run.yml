@@ -1,0 +1,105 @@
+name: Release Dry Run
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/release.yml"
+      - ".github/workflows/release-dry-run.yml"
+      - "package.json"
+      - "package-lock.json"
+      - "schemas/**"
+      - "scripts/**"
+      - "src/**"
+      - "config/**"
+      - "conformance/**"
+      - "docs/release-trust-chain.md"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+
+      - name: Setup Node
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run checks
+        run: |
+          npm run check
+          npm run conformance
+
+      - name: Assert release workflow invariants
+        run: |
+          set -euo pipefail
+          rg --quiet "actions/attest-build-provenance" .github/workflows/release.yml
+          rg --quiet "npm publish .*--provenance" .github/workflows/release.yml
+          rg --quiet "git verify-tag" .github/workflows/release.yml
+          rg --quiet "sbom.cdx.json" .github/workflows/release.yml
+          rg --quiet "cosign sign-blob" .github/workflows/release.yml
+
+      - name: Generate SBOM (CycloneDX)
+        run: npm run sbom:generate -- --output sbom.cdx.json
+
+      - name: Build conformance bundle
+        run: |
+          set -euo pipefail
+          zip -r seven-shadow-conformance-bundle.zip conformance
+
+      - name: Pack release artifacts
+        id: pack
+        run: |
+          set -euo pipefail
+          TARBALL="$(npm pack --silent)"
+          echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
+          sha256sum "$TARBALL" sbom.cdx.json seven-shadow-conformance-bundle.zip > SHA256SUMS.txt
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382
+
+      - name: Dry-run signature flow
+        env:
+          COSIGN_PASSWORD: ""
+        run: |
+          set -euo pipefail
+          if cosign sign-blob --yes --output-signature sbom.cdx.json.sig --output-certificate sbom.cdx.json.pem sbom.cdx.json \
+             && cosign sign-blob --yes --output-signature SHA256SUMS.txt.sig --output-certificate SHA256SUMS.txt.pem SHA256SUMS.txt; then
+            echo "Dry-run used keyless signing path."
+          else
+            echo "Keyless signing unavailable in this context; falling back to ephemeral key-pair signing."
+            rm -f sbom.cdx.json.sig sbom.cdx.json.pem SHA256SUMS.txt.sig SHA256SUMS.txt.pem
+            cosign generate-key-pair
+            cosign sign-blob --yes --key cosign.key --tlog-upload=false --output-signature sbom.cdx.json.sig sbom.cdx.json
+            cp cosign.pub sbom.cdx.json.pem
+            cosign sign-blob --yes --key cosign.key --tlog-upload=false --output-signature SHA256SUMS.txt.sig SHA256SUMS.txt
+            cp cosign.pub SHA256SUMS.txt.pem
+          fi
+
+      - name: Verify npm publish dry run
+        run: npm publish "${{ steps.pack.outputs.tarball }}" --dry-run --access public
+
+      - name: Upload dry-run artifacts
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        with:
+          name: release-dry-run-artifacts
+          path: |
+            ${{ steps.pack.outputs.tarball }}
+            seven-shadow-conformance-bundle.zip
+            sbom.cdx.json
+            sbom.cdx.json.sig
+            sbom.cdx.json.pem
+            SHA256SUMS.txt
+            SHA256SUMS.txt.sig
+            SHA256SUMS.txt.pem

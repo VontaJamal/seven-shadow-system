@@ -1,0 +1,11 @@
+{
+  "id": "oversized-event",
+  "description": "Oversized event payload should be blocked.",
+  "eventName": "pull_request",
+  "event": "events/oversized.json",
+  "policy": "policies/oversized.json",
+  "expectedDecision": "block",
+  "expectedFindingCodes": [
+    "GUARD_EVENT_TOO_LARGE"
+  ]
+}

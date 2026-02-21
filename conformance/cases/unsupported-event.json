@@ -1,0 +1,11 @@
+{
+  "id": "unsupported-event",
+  "description": "Unsupported event should fail closed.",
+  "eventName": "push",
+  "event": "events/pass.json",
+  "policy": "policies/pass.json",
+  "expectedDecision": "block",
+  "expectedFindingCodes": [
+    "GUARD_UNSUPPORTED_EVENT"
+  ]
+}

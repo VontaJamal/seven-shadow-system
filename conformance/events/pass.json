@@ -1,0 +1,21 @@
+{
+  "repository": {
+    "full_name": "acme/repo"
+  },
+  "pull_request": {
+    "number": 7,
+    "body": "Human-authored pull request body.",
+    "user": {
+      "login": "repo-owner",
+      "type": "User"
+    }
+  },
+  "review": {
+    "id": 11,
+    "body": "Thanks for the update.",
+    "user": {
+      "login": "reviewer-one",
+      "type": "User"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "id": "pass",
+  "description": "Baseline clean event should pass.",
+  "eventName": "pull_request_review",
+  "event": "events/pass.json",
+  "policy": "policies/pass.json",
+  "expectedDecision": "pass",
+  "expectedFindingCodes": []
+}

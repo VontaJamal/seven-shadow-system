@@ -1,0 +1,11 @@
+{
+  "id": "warn",
+  "description": "Blocking rule in warn mode should produce warn decision.",
+  "eventName": "pull_request_review",
+  "event": "events/ai-heavy-review.json",
+  "policy": "policies/warn.json",
+  "expectedDecision": "warn",
+  "expectedFindingCodes": [
+    "GUARD_RULE_BLOCK"
+  ]
+}

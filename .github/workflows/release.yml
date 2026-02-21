@@ -1,0 +1,115 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
+
+      - name: Verify signed annotated tag
+        env:
+          RELEASE_GPG_PUBLIC_KEY: ${{ secrets.RELEASE_GPG_PUBLIC_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${RELEASE_GPG_PUBLIC_KEY:-}" ]]; then
+            echo "Missing RELEASE_GPG_PUBLIC_KEY secret"
+            exit 1
+          fi
+
+          TAG_NAME="${GITHUB_REF_NAME}"
+          git fetch --tags --force
+
+          if [[ "$(git cat-file -t "$TAG_NAME")" != "tag" ]]; then
+            echo "Tag '$TAG_NAME' is not an annotated tag"
+            exit 1
+          fi
+
+          export GNUPGHOME
+          GNUPGHOME="$(mktemp -d)"
+          trap 'rm -rf "$GNUPGHOME"' EXIT
+
+          echo "$RELEASE_GPG_PUBLIC_KEY" | gpg --batch --import
+          git verify-tag "$TAG_NAME"
+
+      - name: Setup Node
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run checks
+        run: |
+          npm test
+          npm run validate:schemas
+          npm run conformance
+
+      - name: Generate SBOM (CycloneDX)
+        run: npm run sbom:generate -- --output sbom.cdx.json
+
+      - name: Build conformance bundle
+        run: |
+          set -euo pipefail
+          zip -r seven-shadow-conformance-bundle.zip conformance
+
+      - name: Pack release artifacts
+        id: pack
+        run: |
+          set -euo pipefail
+          TARBALL="$(npm pack --silent)"
+          echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
+          sha256sum "$TARBALL" sbom.cdx.json seven-shadow-conformance-bundle.zip > SHA256SUMS.txt
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382
+
+      - name: Keyless sign SBOM and checksums
+        run: |
+          set -euo pipefail
+          cosign sign-blob --yes --output-signature sbom.cdx.json.sig --output-certificate sbom.cdx.json.pem sbom.cdx.json
+          cosign sign-blob --yes --output-signature SHA256SUMS.txt.sig --output-certificate SHA256SUMS.txt.pem SHA256SUMS.txt
+
+      - name: Attest tarball provenance
+        uses: actions/attest-build-provenance@96b4a1ef7235a096b17240c259729fdd70c83d45
+        with:
+          subject-path: ${{ steps.pack.outputs.tarball }}
+
+      - name: Publish to npm with provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish "${{ steps.pack.outputs.tarball }}" --provenance --access public
+
+      - name: Publish GitHub release + checksums
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          gh release create "$TAG_NAME" \
+            --title "$TAG_NAME" \
+            --notes "Automated release for $TAG_NAME" \
+            "${{ steps.pack.outputs.tarball }}" \
+            seven-shadow-conformance-bundle.zip \
+            sbom.cdx.json \
+            sbom.cdx.json.sig \
+            sbom.cdx.json.pem \
+            SHA256SUMS.txt \
+            SHA256SUMS.txt.sig \
+            SHA256SUMS.txt.pem

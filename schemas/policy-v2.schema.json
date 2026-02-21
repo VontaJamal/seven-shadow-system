@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rinshari.dev/seven-shadow-system/schemas/policy-v2.schema.json",
+  "title": "Seven Shadow Policy v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "enforcement",
+    "blockBotAuthors",
+    "blockedAuthors",
+    "allowedAuthors",
+    "scanPrBody",
+    "scanReviewBody",
+    "scanCommentBody",
+    "maxAiScore",
+    "disclosureTag",
+    "disclosureRequiredScore",
+    "runtime",
+    "report",
+    "approvals",
+    "rules"
+  ],
+  "properties": {
+    "version": { "const": 2 },
+    "enforcement": { "type": "string", "enum": ["block", "warn"] },
+    "blockBotAuthors": { "type": "boolean" },
+    "blockedAuthors": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "allowedAuthors": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "scanPrBody": { "type": "boolean" },
+    "scanReviewBody": { "type": "boolean" },
+    "scanCommentBody": { "type": "boolean" },
+    "maxAiScore": { "type": "number", "minimum": 0, "maximum": 1 },
+    "disclosureTag": { "type": "string", "minLength": 1 },
+    "disclosureRequiredScore": { "type": "number", "minimum": 0, "maximum": 1 },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "failOnUnsupportedEvent",
+        "failOnMalformedPayload",
+        "maxBodyChars",
+        "maxTargets",
+        "maxEventBytes"
+      ],
+      "properties": {
+        "failOnUnsupportedEvent": { "type": "boolean" },
+        "failOnMalformedPayload": { "type": "boolean" },
+        "maxBodyChars": { "type": "integer", "minimum": 32, "maximum": 200000 },
+        "maxTargets": { "type": "integer", "minimum": 1, "maximum": 500 },
+        "maxEventBytes": { "type": "integer", "minimum": 1024, "maximum": 20000000 }
+      }
+    },
+    "report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["includeBodies", "redactionMode"],
+      "properties": {
+        "includeBodies": { "type": "boolean" },
+        "redactionMode": {
+          "type": "string",
+          "enum": ["none", "partial", "hash"]
+        }
+      }
+    },
+    "approvals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minHumanApprovals", "fetchTimeoutMs", "maxPages", "retry"],
+      "properties": {
+        "minHumanApprovals": { "type": "integer", "minimum": 0 },
+        "fetchTimeoutMs": { "type": "integer", "minimum": 250, "maximum": 120000 },
+        "maxPages": { "type": "integer", "minimum": 1, "maximum": 50 },
+        "retry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "enabled",
+            "maxAttempts",
+            "baseDelayMs",
+            "maxDelayMs",
+            "jitterRatio",
+            "retryableStatusCodes"
+          ],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "maxAttempts": { "type": "integer", "minimum": 1, "maximum": 10 },
+            "baseDelayMs": { "type": "integer", "minimum": 1, "maximum": 60000 },
+            "maxDelayMs": { "type": "integer", "minimum": 1, "maximum": 300000 },
+            "jitterRatio": { "type": "number", "minimum": 0, "maximum": 1 },
+            "retryableStatusCodes": {
+              "type": "array",
+              "items": { "type": "integer", "minimum": 100, "maximum": 599 }
+            }
+          }
+        }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "pattern", "action"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "pattern": { "type": "string", "minLength": 1 },
+          "action": { "type": "string", "enum": ["block", "score"] },
+          "weight": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    }
+  }
+}

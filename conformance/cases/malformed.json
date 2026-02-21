@@ -1,0 +1,11 @@
+{
+  "id": "malformed",
+  "description": "Malformed payload should fail closed.",
+  "eventName": "pull_request_review",
+  "event": "events/malformed.json",
+  "policy": "policies/pass.json",
+  "expectedDecision": "block",
+  "expectedFindingCodes": [
+    "GUARD_MALFORMED_EVENT"
+  ]
+}

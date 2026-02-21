@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rinshari.dev/seven-shadow-system/schemas/report-v2.schema.json",
+  "title": "Seven Shadow Guard Report v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "timestamp",
+    "provider",
+    "eventName",
+    "policyPath",
+    "policyVersion",
+    "enforcement",
+    "decision",
+    "targetsScanned",
+    "highestAiScore",
+    "humanApprovals",
+    "findings",
+    "targets",
+    "evidenceHashes",
+    "accessibilitySummary"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "provider": { "type": "string", "minLength": 1 },
+    "eventName": { "type": "string", "minLength": 1 },
+    "policyPath": { "type": "string", "minLength": 1 },
+    "policyVersion": { "type": "integer", "enum": [1, 2] },
+    "enforcement": { "type": "string", "enum": ["block", "warn"] },
+    "decision": { "type": "string", "enum": ["pass", "warn", "block"] },
+    "targetsScanned": { "type": "integer", "minimum": 0 },
+    "highestAiScore": { "type": "number", "minimum": 0, "maximum": 1 },
+    "humanApprovals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "actual", "checked"],
+      "properties": {
+        "required": { "type": "integer", "minimum": 0 },
+        "actual": { "type": ["integer", "null"], "minimum": 0 },
+        "checked": { "type": "boolean" }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "severity", "message", "remediation"],
+        "properties": {
+          "code": { "type": "string", "minLength": 1 },
+          "severity": { "type": "string", "enum": ["block", "warn"] },
+          "message": { "type": "string", "minLength": 1 },
+          "remediation": { "type": "string", "minLength": 1 },
+          "targetReferenceId": { "type": "string" },
+          "details": { "type": "object", "additionalProperties": true }
+        }
+      }
+    },
+    "targets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source",
+          "referenceId",
+          "authorLogin",
+          "authorType",
+          "aiScore",
+          "matchedRules",
+          "findingCodes",
+          "bodyHash"
+        ],
+        "properties": {
+          "source": { "type": "string", "enum": ["pr_body", "review", "comment"] },
+          "referenceId": { "type": "string", "minLength": 1 },
+          "authorLogin": { "type": "string", "minLength": 1 },
+          "authorType": { "type": "string", "enum": ["User", "Bot", "Unknown"] },
+          "aiScore": { "type": "number", "minimum": 0, "maximum": 1 },
+          "matchedRules": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "findingCodes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "bodyHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "body": { "type": "string" },
+          "bodyExcerpt": { "type": "string" }
+        }
+      }
+    },
+    "evidenceHashes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      }
+    },
+    "accessibilitySummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "plainLanguageDecision",
+        "statusWords",
+        "nonColorStatusSignals",
+        "screenReaderFriendly",
+        "cognitiveLoad"
+      ],
+      "properties": {
+        "plainLanguageDecision": { "type": "string", "minLength": 1 },
+        "statusWords": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pass", "warn", "block"],
+          "properties": {
+            "pass": { "type": "string", "minLength": 1 },
+            "warn": { "type": "string", "minLength": 1 },
+            "block": { "type": "string", "minLength": 1 }
+          }
+        },
+        "nonColorStatusSignals": { "type": "boolean" },
+        "screenReaderFriendly": { "type": "boolean" },
+        "cognitiveLoad": { "type": "string", "enum": ["low", "medium"] }
+      }
+    },
+    "generatedReports": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

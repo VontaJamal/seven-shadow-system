@@ -1,0 +1,12 @@
+{
+  "id": "approval-unverified",
+  "description": "Missing token with required approvals should block deterministically.",
+  "eventName": "pull_request_review",
+  "event": "events/pass.json",
+  "policy": "policies/approvals-required.json",
+  "expectedDecision": "block",
+  "expectedFindingCodes": [
+    "GUARD_APPROVALS_UNVERIFIED"
+  ],
+  "githubToken": ""
+}

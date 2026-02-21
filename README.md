@@ -1,16 +1,10 @@
 # Seven Shadow System
 
-Seven Shadow System is an open-source AI review guard for maintainers.
+Seven Shadow System is an open-source governance baseline for AI-influenced pull request review quality.
 
-It helps you detect and govern AI-influenced review content in pull requests and comments.
+It gives maintainers deterministic controls to detect, block, and audit low-trust AI review patterns.
 
-## Start Here (Beginner)
-
-You do not need to know Animate, advanced governance systems, or complicated CI tooling to start.
-
-If you can run `npm` and edit a JSON file, you can use this.
-
-## 3-minute Local Check
+## Quick Start
 
 ```bash
 npm install
@@ -18,68 +12,171 @@ npm test
 npm run guard:seven-shadow -- --event examples/pr_review_event.json --event-name pull_request_review
 ```
 
-## What Decision You Get
+If `approvals.minHumanApprovals > 0` and `GITHUB_TOKEN` is not available, the guard will intentionally return `block`.
 
-Each run ends with one result:
+## Decisions
 
-1. `pass` - policy checks passed
-2. `warn` - policy concerns found but not blocking
-3. `block` - policy failed and should stop merge/release flow
+Each run returns one decision:
 
-## What It Can Enforce
+1. `pass` - no policy findings
+2. `warn` - findings exist but enforcement allows warnings
+3. `block` - policy violations or runtime trust failures
 
-- Block known bot-only review sources
-- Require disclosure tags (for example `[AI-ASSISTED]`)
-- Score suspicious AI-style language patterns
-- Require a minimum number of human approvals
+## Policy v2 Defaults (Fail-Closed)
 
-If your policy requires human approvals (`minHumanApprovals > 0`), the guard needs `GITHUB_TOKEN`.
-Without it, the run blocks by design.
+- Unsupported events can block (`runtime.failOnUnsupportedEvent`)
+- Malformed payloads can block (`runtime.failOnMalformedPayload`)
+- Oversized review bodies and target floods are bounded
+- Human approval verification is required when configured
+- Reports are redacted by default (`report.includeBodies=false`, hash evidence)
 
-## Use It as a Submodule
+Default policy file: `config/seven-shadow-system.policy.json`
 
-Seven Shadow System is built to be reused in other repositories.
-
-Wire it into a target repo:
+## CLI
 
 ```bash
-./scripts/wire-submodule.sh /absolute/path/to/target-repo
+node dist/src/sevenShadowSystem.js \
+  --policy config/seven-shadow-system.policy.json \
+  --event "$GITHUB_EVENT_PATH" \
+  --event-name "$GITHUB_EVENT_NAME" \
+  --provider github \
+  --report .seven-shadow/reports/github-report \
+  --report-format all \
+  --redact
 ```
 
-By default it adds:
+### Useful Flags
+
+- `--provider github`
+- `--report-format json|markdown|sarif|all`
+- `--fail-on-unsupported-event [true|false]`
+- `--max-body-chars <int>`
+- `--max-event-bytes <int>`
+- `--redact`
+- `--policy-bundle <path>`
+- `--policy-schema <path>`
+- `--policy-public-key <keyId=path>` (repeatable)
+- `--org-policy <path>`
+- `--local-policy <path>`
+- `--override-constraints <path>`
+- `--replay-report <path>`
+
+## Governance Modes
+
+### Signed Policy Bundle
+
+Use signed policy bundles for tamper-evident policy delivery:
+
+```bash
+node dist/src/sevenShadowSystem.js \
+  --policy-bundle .seven-shadow/policy.bundle.json \
+  --policy-schema schemas/policy-v2.schema.json \
+  --policy-public-key maintainer=keys/maintainer.pub \
+  --event "$GITHUB_EVENT_PATH" \
+  --event-name "$GITHUB_EVENT_NAME"
+```
+
+Bundle tool commands:
+
+- `npm run policy-bundle:create -- --policy config/seven-shadow-system.policy.json --schema schemas/policy-v2.schema.json --required-signatures 1 --output .seven-shadow/policy.bundle.json`
+- `npm run policy-bundle:sign -- --bundle .seven-shadow/policy.bundle.json --key-id maintainer --private-key keys/maintainer.pem`
+- `npm run policy-bundle:verify -- --bundle .seven-shadow/policy.bundle.json --schema schemas/policy-v2.schema.json --public-key maintainer=keys/maintainer.pub`
+
+### Org Policy + Local Overrides
+
+Apply a central org policy with constrained local tuning:
+
+```bash
+node dist/src/sevenShadowSystem.js \
+  --org-policy .seven-shadow/org-policy.json \
+  --local-policy .seven-shadow/local-policy.json \
+  --override-constraints config/policy-override-constraints.json \
+  --event "$GITHUB_EVENT_PATH" \
+  --event-name "$GITHUB_EVENT_NAME"
+```
+
+Forbidden local override paths fail closed.
+
+### Deterministic Replay
+
+Replay mode compares current output to a stored baseline and blocks on drift:
+
+```bash
+node dist/src/sevenShadowSystem.js \
+  --policy config/seven-shadow-system.policy.json \
+  --event "$GITHUB_EVENT_PATH" \
+  --event-name "$GITHUB_EVENT_NAME" \
+  --replay-report .seven-shadow/baseline-report.json
+```
+
+## Report Outputs
+
+- JSON (`GuardReportV2`) for automation and auditing
+- Markdown for human-readable review board summaries
+- SARIF for security and code-scanning pipelines
+
+All reports include stable finding codes and remediation text.
+
+## Advanced Hardening Scripts
+
+- `npm run security:scorecard` evaluates Scorecard JSON output against `config/security-gates.json`.
+- `npm run test:property` runs deterministic property checks.
+- `npm run test:fuzz` runs targeted event mutation fuzzing (seed override: `FAST_CHECK_SEED`).
+- `npm run conformance` runs the in-repo conformance fixture pack.
+- `npm run test:provider-contract` runs provider adapter contract tests.
+- `npm run test:accessibility` enforces accessibility snapshot stability.
+- `npm run validate:security-gates` ensures dependency-review severity and `config/security-gates.json` stay aligned.
+- `npm run sbom:generate -- --output sbom.cdx.json` generates CycloneDX SBOM output.
+
+## Submodule Integration
+
+```bash
+./scripts/wire-submodule.sh /absolute/path/to/consumer-repo
+```
+
+This installs:
 
 - `governance/seven-shadow-system` (submodule)
-- `.seven-shadow/policy.json` (policy file)
-- `.github/workflows/seven-shadow-system.yml` (workflow)
+- `.seven-shadow/policy.json` (consumer policy)
+- `.github/workflows/seven-shadow-system.yml` (guard workflow)
 
-## Policy Basics
+Use `--force` only when you intentionally want to overwrite an existing workflow template.
 
-Main policy file:
+## GitHub Action Wrapper
 
-- `config/seven-shadow-system.policy.json`
+This repo also provides a wrapper action (`action.yml`) for consumers already using the submodule layout:
 
-Consumer repos usually copy policy to:
+```yaml
+- uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+  with:
+    submodules: recursive
 
-- `.seven-shadow/policy.json`
+- uses: VontaJamal/seven-shadow-system@main
+```
 
-## Foundation-First
+## Migration (v1 -> v2)
 
-This project is intentionally a foundation.
+```bash
+npm run migrate:policy -- path/to/policy-v1.json path/to/policy-v2.json
+```
 
-You can:
+Migration guide: `docs/migrations/policy-v1-to-v2.md`
 
-- Use it as-is
-- Fork it and customize rules
-- Use it to spark your own governance system
+## Open Governance
 
-## Core Files
+- Contributor process: `CONTRIBUTING.md`
+- Security policy: `SECURITY.md`
+- Governance model: `GOVERNANCE.md`
+- Accessibility contract: `docs/accessibility-contract.md`
+- Policy governance + replay controls: `docs/policy-governance.md`
+- Branch protection guidance: `docs/branch-protection.md`
+- Conformance pack guide: `docs/conformance-pack.md`
+- Release trust chain: `docs/release-trust-chain.md`
 
-- Engine: `src/sevenShadowSystem.ts`
-- Tests: `test/sevenShadowSystem.test.ts`
-- Submodule installer: `scripts/wire-submodule.sh`
-- Integration guide: `references/submodule-integration.md`
+Release safety workflow:
 
-## Open Source
+- `Release Dry Run / dry-run` validates release mechanics before tag-based publish.
 
-- License: MIT (`LICENSE`)
-- Public repo model for community extension and reuse
+## License
+
+MIT (`LICENSE`)

@@ -1,6 +1,6 @@
 {
   "name": "@rinshari/seven-shadow-system",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Composable policy engine and CLI for AI-influenced review detection and blocking.",
   "license": "MIT",
   "main": "dist/src/index.js",
@@ -8,20 +8,56 @@
   "bin": {
     "seven-shadow-system": "dist/src/sevenShadowSystem.js"
   },
+  "files": [
+    "dist/src/",
+    "dist/scripts/",
+    "schemas/",
+    "conformance/",
+    "README.md",
+    "LICENSE",
+    "config/",
+    "templates/workflows/",
+    "references/submodule-integration.md",
+    "docs/accessibility-contract.md",
+    "docs/branch-protection.md",
+    "docs/conformance-pack.md",
+    "docs/release-trust-chain.md",
+    "docs/policy-governance.md",
+    "docs/migrations/",
+    "action.yml",
+    "scripts/wire-submodule.sh"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "npm run build && node --test dist/test/*.test.js",
-    "check": "npm run build && npm test",
-    "guard:seven-shadow": "npm run build && node dist/src/sevenShadowSystem.js --policy config/seven-shadow-system.policy.json"
+    "test:accessibility": "npm run build && node --test dist/test/accessibility.snapshot.test.js",
+    "test:provider-contract": "npm run build && node --test dist/test/providers.contract.test.js",
+    "test:property": "npm run build && node --test dist/test/property/*.test.js",
+    "test:fuzz": "npm run build && node --test dist/test/fuzz/*.test.js",
+    "validate:schemas": "npm run build && node dist/scripts/validate-schemas.js",
+    "validate:security-gates": "npm run build && node dist/scripts/validate-security-gates.js",
+    "conformance": "npm run build && node dist/scripts/run-conformance.js",
+    "security:scorecard": "npm run build && node dist/scripts/evaluate-scorecard.js --config config/security-gates.json",
+    "sbom:generate": "npm run build && node dist/scripts/generate-sbom.js",
+    "policy-bundle:create": "npm run build && node dist/scripts/policy-bundle.js create",
+    "policy-bundle:sign": "npm run build && node dist/scripts/policy-bundle.js sign",
+    "policy-bundle:verify": "npm run build && node dist/scripts/policy-bundle.js verify",
+    "check": "npm run test && npm run validate:schemas && npm run validate:security-gates",
+    "guard:seven-shadow": "npm run build && node dist/src/sevenShadowSystem.js --policy config/seven-shadow-system.policy.json",
+    "migrate:policy": "npm run build && node dist/scripts/migrate-policy-v1-to-v2.js"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
+    "safe-regex2": "^5.0.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
     "@types/node": "^22.13.4",
+    "fast-check": "^3.23.2",
     "typescript": "^5.7.3"
   }
 }
