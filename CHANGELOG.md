@@ -2,6 +2,13 @@
 
 All notable changes to Seven Shadow System are documented in this file.
 
+## 0.3.0-rc.2 - 2026-02-21
+
+### Fixed
+
+- Release workflow npm publish authentication now correctly configures npm registry/scope via `actions/setup-node`, allowing `NPM_TOKEN` to be used for provenance publish.
+- Release dry-run workflow now mirrors the same npm registry/scope auth configuration for parity.
+
 ## 0.3.0-rc.1 - 2026-02-21
 
 ### Added

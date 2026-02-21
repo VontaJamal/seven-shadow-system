@@ -1,6 +1,6 @@
 {
   "name": "@rinshari/seven-shadow-system",
-  "version": "0.3.0-rc.1",
+  "version": "0.3.0-rc.2",
   "description": "Composable policy engine and CLI for AI-influenced review detection and blocking.",
   "license": "MIT",
   "main": "dist/src/index.js",
