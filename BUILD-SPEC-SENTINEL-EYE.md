@@ -214,5 +214,65 @@ No new auth mechanism needed.
 - Don't build notification/webhook listeners — this is pull-based CLI
 - Don't touch the existing guard logic — these are parallel commands
 
+## 4. Shadow of Testing — Behavioral Test Quality (`sss test-quality`)
+
+Inspired by @nnennahacks (Feb 21, 2026) — she made Claude Code produce behavioral tests that read as specifications, removed 11 redundant tests, deleted 293 lines, and MAINTAINED 100% coverage. Fewer, better tests.
+
+This extends the Shadow of Testing from "do tests pass" to "are the tests worth having."
+
+**Input:** `sss test-quality [--path <test-dir>] [--format md|json]`
+
+**Output (markdown):**
+```markdown
+## Test Quality Report
+
+### Non-Behavioral Test Names (7 flagged)
+These test names don't describe behavior — they describe implementation:
+
+- `test/utils.test.ts:12` — `test_helper_1` → Should describe what behavior is being verified
+- `test/auth.test.ts:45` — `test_it_works` → What works? Be specific.
+- `test/api.test.ts:8` — `testPost` → What about the POST? What's the expected behavior?
+
+### Behavioral Tests (Good Examples)
+- `test_boolean_literals_are_flipped`
+- `test_comparison_operators_are_swapped`
+- `test_kill_rate_rounds_to_4_decimal_places`
+
+### Coverage vs Test Count
+- Tests added this PR: +12
+- Tests removed this PR: -3
+- Net lines of test code: -45 (good — consolidation)
+- Coverage delta: 0% (maintained)
+- Verdict: ✅ Fewer tests, same coverage = quality improvement
+
+### Inflation Warning
+⚠️ Flagged when: tests added > 2x code lines added with no coverage improvement.
+This usually means padding, not testing.
+```
+
+**Behavior:**
+- Parse test files in the repo (detect framework: Jest, Vitest, pytest, Go test, etc.)
+- Extract all test names/descriptions
+- Flag non-behavioral names using heuristics:
+  - Names shorter than 5 words (e.g., `test1`, `testPost`, `it works`)
+  - Names that reference function names instead of behaviors (e.g., `test_calculateTotal` vs `test_total_includes_tax_when_applicable`)
+  - Names with no assertion-style language (no "should", "when", "returns", "throws", "given", etc.)
+- Compare test count and coverage between base and head (if PR context available)
+- Flag test inflation: many tests added but coverage unchanged = padding
+- Flag test deletion that maintains coverage as POSITIVE (Nnenna's pattern)
+
+**Test criteria:**
+- [ ] Detects non-behavioral test names across Jest, pytest, Go test
+- [ ] Provides good/bad examples from the actual codebase
+- [ ] Calculates test-to-code ratio for PRs
+- [ ] Flags inflation (many tests, no coverage gain)
+- [ ] Praises consolidation (fewer tests, same coverage)
+- [ ] JSON output is structured and parseable
+
+**Philosophy (encode this):**
+- "Test names are specifications. If you can't understand the system guarantees by reading test names alone, the tests are wrong."
+- "100 tests at 80% coverage is worse than 38 tests at 100% coverage."
+- "Removing tests that maintain coverage is an improvement, not a regression."
+
 ## Priority
-Ship `sss comments` first — it's the simplest and highest value. Then `sss failures`. Then `sss lint` (which builds on failures).
+Ship `sss comments` first — it's the simplest and highest value. Then `sss failures`. Then `sss lint` (which builds on failures). Then `sss test-quality` (Shadow of Testing upgrade).
