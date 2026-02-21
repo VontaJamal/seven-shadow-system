@@ -15,7 +15,7 @@ Seven Shadow System release provenance requires ten controls:
 
 ## Required Repository Secrets
 
-- `NPM_TOKEN`: npm token with publish access to `@rinshari/seven-shadow-system`.
+- `NPM_TOKEN`: npm token with publish access to `@rinshari/sss` and 2FA bypass enabled for CI publish.
 - `RELEASE_GPG_PUBLIC_KEY`: ASCII-armored public key used to verify signed tags.
 
 ## Pre-Release Gate
@@ -43,6 +43,11 @@ git push origin v0.3.0-rc.1
 
 The release workflow (`.github/workflows/release.yml`) verifies the tag signature and enforces tag/version equality before any publish steps run.
 It also verifies signed SBOM/checksum outputs and verifies tarball provenance attestations prior to npm publish.
+
+npm dist-tag behavior:
+
+- prerelease versions (for example `0.3.0-rc.3`) publish to `next`
+- stable versions (for example `0.3.0`) publish to `latest`
 
 ## Release Outputs
 
