@@ -49,6 +49,7 @@ jobs:
           rg --quiet "git verify-tag" .github/workflows/release.yml
           rg --quiet "sbom.cdx.json" .github/workflows/release.yml
           rg --quiet "cosign sign-blob" .github/workflows/release.yml
+          rg --quiet "build-provider-fixture-bundle" .github/workflows/release.yml
 
       - name: Generate SBOM (CycloneDX)
         run: npm run sbom:generate -- --output sbom.cdx.json
@@ -58,13 +59,21 @@ jobs:
           set -euo pipefail
           zip -r seven-shadow-conformance-bundle.zip conformance
 
+      - name: Build provider contract fixture bundle
+        id: provider_fixtures
+        run: |
+          set -euo pipefail
+          npm run build
+          BUNDLE="$(node dist/scripts/build-provider-fixture-bundle.js)"
+          echo "bundle=$BUNDLE" >> "$GITHUB_OUTPUT"
+
       - name: Pack release artifacts
         id: pack
         run: |
           set -euo pipefail
           TARBALL="$(npm pack --silent)"
           echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
-          sha256sum "$TARBALL" sbom.cdx.json seven-shadow-conformance-bundle.zip > SHA256SUMS.txt
+          sha256sum "$TARBALL" sbom.cdx.json seven-shadow-conformance-bundle.zip "${{ steps.provider_fixtures.outputs.bundle }}" > SHA256SUMS.txt
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382
@@ -97,6 +106,7 @@ jobs:
           path: |
             ${{ steps.pack.outputs.tarball }}
             seven-shadow-conformance-bundle.zip
+            ${{ steps.provider_fixtures.outputs.bundle }}
             sbom.cdx.json
             sbom.cdx.json.sig
             sbom.cdx.json.pem

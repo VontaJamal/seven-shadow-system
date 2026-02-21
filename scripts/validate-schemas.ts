@@ -61,8 +61,21 @@ async function run(): Promise<void> {
   const policySchemaPath = path.join(process.cwd(), "schemas", "policy-v2.schema.json");
   const reportSchemaPath = path.join(process.cwd(), "schemas", "report-v2.schema.json");
   const overrideConstraintsSchemaPath = path.join(process.cwd(), "schemas", "override-constraints-v1.schema.json");
+  const trustStoreV1SchemaPath = path.join(process.cwd(), "schemas", "policy-trust-store-v1.schema.json");
+  const trustStoreV2SchemaPath = path.join(process.cwd(), "schemas", "policy-trust-store-v2.schema.json");
+  const providerContractFixturesSchemaPath = path.join(process.cwd(), "schemas", "provider-contract-fixtures-v1.schema.json");
   const policyPath = path.join(process.cwd(), "config", "seven-shadow-system.policy.json");
   const overrideConstraintsPath = path.join(process.cwd(), "config", "policy-override-constraints.json");
+  const trustStoreV1Path = path.join(process.cwd(), "config", "policy-trust-store.sample.json");
+  const trustStoreV2Path = path.join(process.cwd(), "config", "policy-trust-store.v2.sample.json");
+  const providerContractManifestPath = path.join(process.cwd(), "conformance", "provider-contract", "manifest.json");
+  const providerContractGithubFixturePath = path.join(
+    process.cwd(),
+    "conformance",
+    "provider-contract",
+    "providers",
+    "github.v1.json"
+  );
 
   await validateSchemaInstance(policySchemaPath, policyPath, "policy-v2.schema.json", "config/seven-shadow-system.policy.json");
   await validateSchemaInstance(
@@ -70,6 +83,30 @@ async function run(): Promise<void> {
     overrideConstraintsPath,
     "override-constraints-v1.schema.json",
     "config/policy-override-constraints.json"
+  );
+  await validateSchemaInstance(
+    trustStoreV1SchemaPath,
+    trustStoreV1Path,
+    "policy-trust-store-v1.schema.json",
+    "config/policy-trust-store.sample.json"
+  );
+  await validateSchemaInstance(
+    trustStoreV2SchemaPath,
+    trustStoreV2Path,
+    "policy-trust-store-v2.schema.json",
+    "config/policy-trust-store.v2.sample.json"
+  );
+  await validateSchemaInstance(
+    providerContractFixturesSchemaPath,
+    providerContractManifestPath,
+    "provider-contract-fixtures-v1.schema.json",
+    "conformance/provider-contract/manifest.json"
+  );
+  await validateSchemaInstance(
+    providerContractFixturesSchemaPath,
+    providerContractGithubFixturePath,
+    "provider-contract-fixtures-v1.schema.json",
+    "conformance/provider-contract/providers/github.v1.json"
   );
 
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "seven-shadow-schema-"));

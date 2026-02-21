@@ -1,166 +1,92 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+
 import { githubProvider } from "../src/providers/github";
-import { runProviderContractSuite } from "./providerContractHarness";
+import {
+  buildPagedFetchStub,
+  runProviderContractSuite,
+  type ProviderContractFixture
+} from "./providerContractHarness";
 
-runProviderContractSuite({
-  providerName: "github",
-  provider: githubProvider,
-  policyContext: {
-    scanPrBody: true,
-    scanReviewBody: true,
-    scanCommentBody: true,
-    approvals: {
-      fetchTimeoutMs: 5000,
-      maxPages: 10
-    }
-  },
-  extractionCases: [
-    {
-      name: "extracts PR body + review body from pull_request_review",
-      eventName: "pull_request_review",
-      payload: {
-        repository: { full_name: "acme/repo" },
-        pull_request: {
-          number: 7,
-          body: "PR body text",
-          user: { login: "owner", type: "User" }
-        },
-        review: {
-          id: 12,
-          body: "Looks solid",
-          user: { login: "reviewer", type: "User" }
-        }
-      },
-      expectedSources: ["pr_body", "review"]
-    },
-    {
-      name: "extracts PR issue comment body from issue_comment",
-      eventName: "issue_comment",
-      payload: {
-        repository: { full_name: "acme/repo" },
-        issue: {
-          number: 9,
-          pull_request: {}
-        },
-        comment: {
-          id: 44,
-          body: "Can we add tests?",
-          user: { login: "human-commenter", type: "User" }
-        }
-      },
-      expectedSources: ["comment"]
-    }
-  ],
-  malformedCase: {
-    name: "flags missing PR object as malformed",
-    eventName: "pull_request_review",
-    payload: {
-      repository: { full_name: "acme/repo" },
-      review: {
-        id: 19,
-        body: "Test"
-      }
-    },
-    expectedSources: ["review"],
-    expectedMalformedReasons: ["missing pull_request object"]
-  },
-  pullContextCases: [
-    {
-      name: "extracts pull context from pull_request_review",
-      eventName: "pull_request_review",
-      payload: {
-        repository: { full_name: "acme/repo" },
-        pull_request: {
-          number: 7
-        }
-      },
-      expected: {
-        owner: "acme",
-        repo: "repo",
-        pullNumber: 7
-      }
-    },
-    {
-      name: "extracts pull context from PR-backed issue_comment",
-      eventName: "issue_comment",
-      payload: {
-        repository: { full_name: "acme/repo" },
-        issue: {
-          number: 11,
-          pull_request: {}
-        }
-      },
-      expected: {
-        owner: "acme",
-        repo: "repo",
-        pullNumber: 11
-      }
-    },
-    {
-      name: "returns null pull context for non-PR issue_comment",
-      eventName: "issue_comment",
-      payload: {
-        repository: { full_name: "acme/repo" },
-        issue: {
-          number: 12
-        }
-      },
-      expected: null
-    }
-  ],
-  approvalCase: {
-    name: "counts latest non-bot approvals and ignores allowlisted users",
-    context: {
-      owner: "acme",
-      repo: "repo",
-      pullNumber: 42
-    },
-    allowedAuthors: new Set(["trusted-admin"]),
-    expectedApprovals: 1,
-    fetchTimeoutMs: 5000,
-    maxPages: 5,
-    fetchImpl: async (input: RequestInfo | URL): Promise<Response> => {
-      const url = typeof input === "string" ? input : input.toString();
-      const parsed = new URL(url);
-      const page = parsed.searchParams.get("page");
+interface ProviderContractManifest {
+  schemaVersion: 1;
+  providers: string[];
+}
 
-      if (page === "1") {
-        return new Response(
-          JSON.stringify([
-            { state: "APPROVED", user: { login: "trusted-admin", type: "User" } },
-            { state: "APPROVED", user: { login: "bot-reviewer", type: "Bot" } },
-            { state: "APPROVED", user: { login: "alice", type: "User" } },
-            { state: "CHANGES_REQUESTED", user: { login: "bob", type: "User" } }
-          ]),
-          {
-            status: 200,
-            headers: {
-              "content-type": "application/json"
-            }
-          }
-        );
-      }
+function readJson(filePath: string): unknown {
+  return JSON.parse(fs.readFileSync(filePath, "utf8")) as unknown;
+}
 
-      if (page === "2") {
-        return new Response(
-          JSON.stringify([
-            { state: "APPROVED", user: { login: "bob", type: "User" } },
-            { state: "COMMENTED", user: { login: "alice", type: "User" } }
-          ]),
-          {
-            status: 200,
-            headers: {
-              "content-type": "application/json"
-            }
-          }
-        );
-      }
+function parseManifest(raw: unknown): ProviderContractManifest {
+  assert.ok(raw && typeof raw === "object" && !Array.isArray(raw));
 
-      return new Response("[]", {
-        status: 200,
-        headers: {
-          "content-type": "application/json"
-        }
-      });
-    }
+  const schemaVersion = (raw as { schemaVersion?: unknown }).schemaVersion;
+  const providers = (raw as { providers?: unknown }).providers;
+
+  assert.equal(schemaVersion, 1, "provider contract manifest must have schemaVersion=1");
+  assert.ok(Array.isArray(providers) && providers.length > 0, "provider contract manifest must declare providers[]");
+
+  for (const provider of providers) {
+    assert.equal(typeof provider, "string");
+    assert.ok(provider.length > 0);
   }
-});
+
+  return {
+    schemaVersion: 1,
+    providers: providers as string[]
+  };
+}
+
+function parseFixture(raw: unknown, filePath: string): ProviderContractFixture {
+  assert.ok(raw && typeof raw === "object" && !Array.isArray(raw), `${filePath} must be an object`);
+  const fixture = raw as ProviderContractFixture;
+
+  assert.equal(fixture.schemaVersion, 1, `${filePath} schemaVersion must be 1`);
+  assert.equal(typeof fixture.providerName, "string", `${filePath} providerName must be a string`);
+  assert.ok(fixture.providerName.length > 0, `${filePath} providerName must be non-empty`);
+  assert.ok(Array.isArray(fixture.extractionCases), `${filePath} extractionCases must be an array`);
+  assert.ok(Array.isArray(fixture.pullContextCases), `${filePath} pullContextCases must be an array`);
+  assert.ok(Array.isArray(fixture.approvalCase.pages), `${filePath} approvalCase.pages must be an array`);
+
+  return fixture;
+}
+
+const providersByName = {
+  github: githubProvider
+} as const;
+
+const fixturesRoot = path.join(process.cwd(), "conformance", "provider-contract");
+const manifestPath = path.join(fixturesRoot, "manifest.json");
+const manifest = parseManifest(readJson(manifestPath));
+
+for (const relativeProviderPath of manifest.providers) {
+  const fixturePath = path.join(fixturesRoot, relativeProviderPath);
+  const fixture = parseFixture(readJson(fixturePath), fixturePath);
+  const provider = providersByName[fixture.providerName as keyof typeof providersByName];
+
+  assert.ok(provider, `No provider adapter registered for fixture '${fixture.providerName}'`);
+
+  runProviderContractSuite({
+    providerName: fixture.providerName,
+    provider,
+    policyContext: fixture.policyContext,
+    extractionCases: fixture.extractionCases,
+    malformedCase: fixture.malformedCase,
+    pullContextCases: fixture.pullContextCases,
+    approvalCase: {
+      name: fixture.approvalCase.name,
+      context: fixture.approvalCase.context,
+      allowedAuthors: new Set(fixture.approvalCase.allowedAuthors.map((item) => item.trim().toLowerCase())),
+      expectedApprovals: fixture.approvalCase.expectedApprovals,
+      fetchTimeoutMs: fixture.approvalCase.fetchTimeoutMs,
+      maxPages: fixture.approvalCase.maxPages,
+      fetchImpl: buildPagedFetchStub({
+        pages: fixture.approvalCase.pages,
+        defaultStatus: fixture.approvalCase.defaultStatus,
+        defaultBody: fixture.approvalCase.defaultBody,
+        defaultHeaders: fixture.approvalCase.defaultHeaders
+      })
+    }
+  });
+}
