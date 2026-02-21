@@ -22,6 +22,12 @@ Optional bundle/trust scaffold:
 ./scripts/wire-submodule.sh --with-bundle-trust --trust-store-version 2 /absolute/path/to/consumer-repo
 ```
 
+Bootstrap trust rollout bundle/trust scaffolding + lint snapshot + PR template:
+
+```bash
+./scripts/bootstrap-trust-rollout.sh --trust-store-version 2 /absolute/path/to/consumer-repo
+```
+
 Optional overwrite of existing workflow template:
 
 ```bash
@@ -67,3 +73,8 @@ Scaffolded trust files (when `--with-bundle-trust` is used):
 - `.seven-shadow/policy-trust-store.json`
 - `.seven-shadow/policy.bundle.template.json`
 - `.seven-shadow/policy-bundle-quickstart.md`
+
+Additional rollout artifacts (when `bootstrap-trust-rollout.sh` is used):
+
+- `.seven-shadow/trust-rollout/trust-lint.json`
+- `.seven-shadow/trust-rollout/pr-template.md`
