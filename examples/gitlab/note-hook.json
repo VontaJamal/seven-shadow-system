@@ -1,0 +1,15 @@
+{
+  "object_kind": "note",
+  "project": {
+    "path_with_namespace": "acme/platform/repo"
+  },
+  "user": {
+    "username": "reviewer"
+  },
+  "object_attributes": {
+    "id": 202,
+    "noteable_type": "MergeRequest",
+    "noteable_iid": 17,
+    "note": "Please add one more regression test for payload parsing."
+  }
+}

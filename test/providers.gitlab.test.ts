@@ -14,6 +14,10 @@ const defaultPolicy: ProviderPolicyContext = {
   }
 };
 
+test("gitlab provider declares supported events", () => {
+  assert.deepEqual(Array.from(gitlabProvider.supportedEvents).sort(), ["Merge Request Hook", "Note Hook"]);
+});
+
 test("gitlab provider extracts merge request body and note body targets", () => {
   const mergeRequestTargets = gitlabProvider.extractTargets(
     "Merge Request Hook",
@@ -60,6 +64,29 @@ test("gitlab provider extracts merge request body and note body targets", () => 
   assert.deepEqual(noteTargets.malformedReasons, []);
 });
 
+test("gitlab provider resolves Note Hook pull request iid from merge_request fallback", () => {
+  const context = gitlabProvider.extractPullContext("Note Hook", {
+    object_kind: "note",
+    project: {
+      path_with_namespace: "acme/platform/repo"
+    },
+    object_attributes: {
+      noteable_type: "MergeRequest",
+      note: "Looks good",
+      id: 77
+    },
+    merge_request: {
+      iid: 33
+    }
+  });
+
+  assert.deepEqual(context, {
+    owner: "acme/platform",
+    repo: "repo",
+    pullNumber: 33
+  });
+});
+
 test("gitlab provider reports deterministic malformed reasons", () => {
   const malformed = gitlabProvider.extractTargets(
     "Note Hook",
@@ -81,6 +108,22 @@ test("gitlab provider reports deterministic malformed reasons", () => {
     "missing object_attributes.note",
     "missing merge request iid"
   ]);
+});
+
+test("gitlab provider reports missing project namespace deterministically", () => {
+  const malformed = gitlabProvider.extractTargets(
+    "Merge Request Hook",
+    {
+      object_kind: "merge_request",
+      object_attributes: {
+        iid: 9
+      }
+    },
+    defaultPolicy
+  );
+
+  assert.deepEqual(malformed.targets, []);
+  assert.deepEqual(malformed.malformedReasons, ["missing project.path_with_namespace"]);
 });
 
 test("gitlab provider extracts pull context for merge request events", () => {
