@@ -83,3 +83,7 @@ You can:
 
 - License: MIT (`LICENSE`)
 - Public repo model for community extension and reuse
+
+---
+
+Part of [Sovereign](https://github.com/VontaJamal) — The Shadow Dominion.
