@@ -6,6 +6,8 @@ Seven Shadow System is designed for idempotent submodule-first integration.
 
 - `governance/seven-shadow-system` (submodule)
 - `.seven-shadow/policy.json` (consumer policy)
+- `.seven-shadow/policy.bundle.json` (optional signed policy bundle)
+- `.seven-shadow/policy-trust-store.json` (optional trust store for bundle verification)
 - `.github/workflows/seven-shadow-system.yml` (consumer enforcement workflow)
 
 ## Install
@@ -33,6 +35,20 @@ Recommended events:
 ```bash
 node governance/seven-shadow-system/dist/src/sevenShadowSystem.js \
   --policy .seven-shadow/policy.json \
+  --event "$GITHUB_EVENT_PATH" \
+  --event-name "$GITHUB_EVENT_NAME" \
+  --report .seven-shadow/reports/github-report \
+  --report-format all \
+  --redact
+```
+
+Bundle mode (optional):
+
+```bash
+node governance/seven-shadow-system/dist/src/sevenShadowSystem.js \
+  --policy-bundle .seven-shadow/policy.bundle.json \
+  --policy-schema governance/seven-shadow-system/schemas/policy-v2.schema.json \
+  --policy-trust-store .seven-shadow/policy-trust-store.json \
   --event "$GITHUB_EVENT_PATH" \
   --event-name "$GITHUB_EVENT_NAME" \
   --report .seven-shadow/reports/github-report \

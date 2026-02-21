@@ -56,6 +56,7 @@ node dist/src/sevenShadowSystem.js \
 - `--policy-bundle <path>`
 - `--policy-schema <path>`
 - `--policy-public-key <keyId=path>` (repeatable)
+- `--policy-trust-store <path>`
 - `--org-policy <path>`
 - `--local-policy <path>`
 - `--override-constraints <path>`
@@ -71,16 +72,24 @@ Use signed policy bundles for tamper-evident policy delivery:
 node dist/src/sevenShadowSystem.js \
   --policy-bundle .seven-shadow/policy.bundle.json \
   --policy-schema schemas/policy-v2.schema.json \
-  --policy-public-key maintainer=keys/maintainer.pub \
+  --policy-trust-store .seven-shadow/policy-trust-store.json \
   --event "$GITHUB_EVENT_PATH" \
   --event-name "$GITHUB_EVENT_NAME"
 ```
 
 Bundle tool commands:
 
-- `npm run policy-bundle:create -- --policy config/seven-shadow-system.policy.json --schema schemas/policy-v2.schema.json --required-signatures 1 --output .seven-shadow/policy.bundle.json`
+- `npm run policy-bundle:create -- --schema-version 2 --policy config/seven-shadow-system.policy.json --schema schemas/policy-v2.schema.json --required-signatures 1 --output .seven-shadow/policy.bundle.json`
 - `npm run policy-bundle:sign -- --bundle .seven-shadow/policy.bundle.json --key-id maintainer --private-key keys/maintainer.pem`
-- `npm run policy-bundle:verify -- --bundle .seven-shadow/policy.bundle.json --schema schemas/policy-v2.schema.json --public-key maintainer=keys/maintainer.pub`
+- `npm run policy-bundle:sign-keyless -- --bundle .seven-shadow/policy.bundle.json --signer-id release-keyless`
+- `npm run policy-bundle:verify -- --bundle .seven-shadow/policy.bundle.json --schema schemas/policy-v2.schema.json --trust-store config/policy-trust-store.sample.json`
+
+Trust store files:
+
+- `config/policy-trust-store.sample.json` (schema v1)
+- `config/policy-trust-store.v2.sample.json` (schema v2 with lifecycle metadata)
+- `schemas/policy-trust-store-v1.schema.json`
+- `schemas/policy-trust-store-v2.schema.json`
 
 ### Org Policy + Local Overrides
 
@@ -124,6 +133,7 @@ All reports include stable finding codes and remediation text.
 - `npm run test:fuzz` runs targeted event mutation fuzzing (seed override: `FAST_CHECK_SEED`).
 - `npm run conformance` runs the in-repo conformance fixture pack.
 - `npm run test:provider-contract` runs provider adapter contract tests.
+- `npm run provider-fixtures:bundle` builds `seven-shadow-provider-contract-fixtures-v<packageVersion>.zip`.
 - `npm run test:accessibility` enforces accessibility snapshot stability.
 - `npm run validate:security-gates` ensures dependency-review severity and `config/security-gates.json` stay aligned.
 - `npm run sbom:generate -- --output sbom.cdx.json` generates CycloneDX SBOM output.
@@ -161,6 +171,8 @@ npm run migrate:policy -- path/to/policy-v1.json path/to/policy-v2.json
 ```
 
 Migration guide: `docs/migrations/policy-v1-to-v2.md`
+
+Trust-store migration guide: `docs/migrations/policy-trust-store-v1-to-v2.md`
 
 ## Open Governance
 

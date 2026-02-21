@@ -6,7 +6,7 @@ Seven Shadow System release provenance requires six controls:
 2. npm publish with provenance (`--provenance`).
 3. GitHub artifact attestations for release tarballs.
 4. CycloneDX SBOM generation (`sbom.cdx.json`).
-5. SHA-256 checksums covering tarball + SBOM + conformance bundle.
+5. SHA-256 checksums covering tarball + SBOM + conformance bundle + provider fixture bundle.
 6. Sigstore signatures for `sbom.cdx.json` and `SHA256SUMS.txt`.
 
 ## Required Repository Secrets
@@ -36,6 +36,7 @@ The release workflow (`.github/workflows/release.yml`) verifies the tag signatur
 - GitHub release assets:
   - `<package>.tgz`
   - `seven-shadow-conformance-bundle.zip`
+  - `seven-shadow-provider-contract-fixtures-v<packageVersion>.zip`
   - `sbom.cdx.json`
   - `sbom.cdx.json.sig`
   - `sbom.cdx.json.pem`

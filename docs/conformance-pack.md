@@ -1,13 +1,20 @@
 # Conformance Pack
 
-Seven Shadow System ships a conformance fixture pack so downstream adapters can prove parity with the canonical runtime.
+Seven Shadow System ships deterministic conformance assets so downstream adapters can prove parity with the canonical runtime.
 
 ## Layout
+
+Core conformance pack:
 
 - `conformance/manifest.json`: case index
 - `conformance/cases/*.json`: case expectations
 - `conformance/events/*.json`: input fixtures
 - `conformance/policies/*.json`: policy fixtures
+
+Provider contract fixtures:
+
+- `conformance/provider-contract/manifest.json`: provider fixture index
+- `conformance/provider-contract/providers/*.json`: versioned provider contract fixtures
 
 ## Run Conformance Locally
 
@@ -22,6 +29,18 @@ The runner executes each case through the same runtime entrypoint and fails on:
 - missing remediation text in findings
 - expected runtime errors not observed
 
+## Provider Contract Fixtures
+
+```bash
+npm run test:provider-contract
+```
+
+Provider fixture schema:
+
+- `schemas/provider-contract-fixtures-v1.schema.json`
+
+The provider contract tests load fixture JSON from `conformance/provider-contract` and execute the shared harness.
+
 ## Baseline Cases
 
 - `pass`
@@ -35,4 +54,9 @@ The runner executes each case through the same runtime entrypoint and fails on:
 
 ## Release Distribution
 
-Releases attach `seven-shadow-conformance-bundle.zip` so downstream systems can validate integrations without cloning source history.
+Releases attach both:
+
+- `seven-shadow-conformance-bundle.zip`
+- `seven-shadow-provider-contract-fixtures-v<packageVersion>.zip`
+
+This allows downstream systems to validate runtime behavior and provider adapter compatibility without cloning source history.
