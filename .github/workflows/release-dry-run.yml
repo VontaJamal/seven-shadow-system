@@ -32,6 +32,9 @@ jobs:
         with:
           node-version: "22"
           cache: "npm"
+          registry-url: "https://registry.npmjs.org"
+          scope: "@rinshari"
+          always-auth: true
 
       - name: Install dependencies
         run: npm ci

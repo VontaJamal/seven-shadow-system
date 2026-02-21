@@ -51,6 +51,9 @@ jobs:
         with:
           node-version: "22"
           cache: "npm"
+          registry-url: "https://registry.npmjs.org"
+          scope: "@rinshari"
+          always-auth: true
 
       - name: Verify release tag matches package version
         env:
