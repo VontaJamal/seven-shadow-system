@@ -4,6 +4,7 @@ set -euo pipefail
 FORCE=0
 WITH_BUNDLE_TRUST=0
 TRUST_STORE_VERSION="2"
+SKIP_README_BADGE=0
 POSITIONAL=()
 
 while [[ $# -gt 0 ]]; do
@@ -14,6 +15,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --with-bundle-trust)
       WITH_BUNDLE_TRUST=1
+      shift
+      ;;
+    --skip-readme-badge)
+      SKIP_README_BADGE=1
       shift
       ;;
     --trust-store-version)
@@ -36,7 +41,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ ${#POSITIONAL[@]} -lt 1 ]]; then
-  echo "Usage: $0 [--force] [--with-bundle-trust --trust-store-version 1|2] /absolute/path/to/target-repo [submodule-path]"
+  echo "Usage: $0 [--force] [--with-bundle-trust --trust-store-version 1|2] [--skip-readme-badge] /absolute/path/to/target-repo [submodule-path]"
   exit 1
 fi
 
@@ -110,6 +115,34 @@ else
   cp "$TARGET_REPO/$SUBMODULE_PATH/templates/workflows/seven-shadow-system.yml" "$WORKFLOW_TARGET"
   if [[ "$FORCE" -eq 1 ]]; then
     echo "Workflow overwritten via --force: $WORKFLOW_TARGET"
+  fi
+fi
+
+README_TARGET="$TARGET_REPO/README.md"
+README_TEMPLATE="$TARGET_REPO/$SUBMODULE_PATH/templates/submodule/readme-protection-block.md"
+README_MARKER="seven-shadow-system:protection-block:start"
+README_PROTECTION_HEADER="## Protected by the [Seven Shadows](https://github.com/VontaJamal/seven-shadow-system)"
+README_VAULT_LINK="https://github.com/VontaJamal/shadow-vault"
+
+if [[ "$SKIP_README_BADGE" -eq 1 ]]; then
+  echo "Skipping README protection block via --skip-readme-badge."
+elif [[ ! -f "$README_TEMPLATE" ]]; then
+  echo "README protection template missing and was not applied: $README_TEMPLATE"
+else
+  if [[ ! -f "$README_TARGET" ]]; then
+    touch "$README_TARGET"
+  fi
+
+  if grep -Fq "$README_MARKER" "$README_TARGET"; then
+    echo "README already contains managed Seven Shadows protection block: $README_TARGET"
+  elif grep -Fq "$README_PROTECTION_HEADER" "$README_TARGET" && grep -Fq "$README_VAULT_LINK" "$README_TARGET"; then
+    echo "README already contains Seven Shadows protection + Vault link: $README_TARGET"
+  else
+    if [[ -s "$README_TARGET" ]]; then
+      printf "\n\n" >> "$README_TARGET"
+    fi
+    cat "$README_TEMPLATE" >> "$README_TARGET"
+    echo "README protection block added: $README_TARGET"
   fi
 fi
 

@@ -76,6 +76,15 @@ By default it adds:
 - `governance/seven-shadow-system` (submodule)
 - `.seven-shadow/policy.json` (policy file)
 - `.github/workflows/seven-shadow-system.yml` (workflow)
+- `README.md` protection footer with:
+  - `Protected by the Seven Shadows`
+  - `Explore the Vault` link
+
+Skip README footer injection if a consumer needs custom docs handling:
+
+```bash
+./scripts/wire-submodule.sh --skip-readme-badge /absolute/path/to/target-repo
+```
 
 ## Policy Basics
 
