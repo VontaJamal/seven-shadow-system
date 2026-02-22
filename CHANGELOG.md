@@ -2,6 +2,40 @@
 
 All notable changes to Seven Shadow System are documented in this file.
 
+## 0.3.0-rc.4 - 2026-02-21
+
+### Added
+
+- Sentinel Eye subcommand dispatcher (`sss`) with backward-compatible guard mode:
+  - `sss comments`
+  - `sss failures`
+  - `sss lint`
+  - `sss test-quality`
+- GitHub Sentinel provider adapter for unresolved review threads, failing CI run/job discovery, and zipped Actions log retrieval.
+- Bounded CI log extraction controls for Sentinel commands:
+  - `--max-lines-per-run` (default `200`)
+  - `--context-lines` (default `5`)
+  - `--max-runs` (default `10`)
+  - `--max-log-bytes` (default `5000000`)
+- Parser suite for CI-derived diagnostics:
+  - ESLint
+  - TypeScript
+  - Jest
+  - Vitest
+  - Pytest/Flake8/Mypy
+  - Generic fallback
+- Secret scanning workflow (`.github/workflows/secret-scan.yml`).
+- PR template with Seven Shadow domain checklist (`.github/pull_request_template.md`).
+- Sentinel command output snapshot gate (`test/sentinelOutputs.snapshot.test.ts`).
+- Armory handoff staging reference (`references/armory-sync.md`).
+- Sentinel command documentation (`docs/sentinel-eye.md`).
+
+### Changed
+
+- Package binary now exposes both `seven-shadow-system` and `sss` command aliases via the new CLI dispatcher.
+- Accessibility snapshot script now covers both guard and Sentinel output snapshots.
+- Branch protection guidance now includes secret scan as a required check.
+
 ## 0.3.0-rc.3 - 2026-02-21
 
 ### Changed

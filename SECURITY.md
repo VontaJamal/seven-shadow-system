@@ -21,9 +21,11 @@ Please do not disclose publicly until maintainers confirm a fix and advisory win
 - Regex safety gate to reject unsafe patterns.
 - Least-privilege workflow permissions.
 - Supply-chain gates for dependency review + OpenSSF Scorecard thresholds.
+- Secret detection CI gate (`.github/workflows/secret-scan.yml`) to block committed credentials.
 - Signed SBOM/checksum release artifacts with Sigstore.
 - No telemetry in core runtime by default.
 - Redacted reports by default (body hashes, not raw review content).
+- Sentinel log extraction is bounded (`max-runs`, `max-log-bytes`, `max-lines-per-run`) to prevent unbounded CI log processing.
 
 ## Data Boundary
 

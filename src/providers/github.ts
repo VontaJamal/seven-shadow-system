@@ -8,6 +8,7 @@ import type {
   PullContext
 } from "./types";
 import { ProviderApprovalError } from "./types";
+import { githubSentinelAdapter } from "./githubSentinel";
 
 interface GitHubReview {
   state?: string;
@@ -528,6 +529,7 @@ function extractPullContext(eventName: string, payload: Record<string, unknown>)
 export const githubProvider: ProviderAdapter = {
   name: "github",
   approvalTokenEnvVar: "GITHUB_TOKEN",
+  sentinel: githubSentinelAdapter,
   supportedEvents: GITHUB_SUPPORTED_EVENTS,
   extractTargets: (eventName: string, payload: unknown, policy: ProviderPolicyContext): ProviderTargetExtractionResult => {
     const obj = asObject(payload);

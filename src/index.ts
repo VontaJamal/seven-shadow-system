@@ -4,9 +4,11 @@ export {
   extractTargetsFromEvent,
   runSevenShadowSystem
 } from "./sevenShadowSystem";
+export { runCli } from "./cli";
 export { bitbucketProvider } from "./providers/bitbucket";
 export { bitbucketServerStub } from "./providers/bitbucket-server.stub";
 export { githubProvider } from "./providers/github";
+export { githubSentinelAdapter } from "./providers/githubSentinel";
 export { gitlabProvider } from "./providers/gitlab";
 export { getProviderByName, listProviderNames, listProviders, providerRegistry } from "./providers/registry";
 export { ProviderApprovalError } from "./providers/types";
@@ -42,6 +44,14 @@ export type {
   ProviderApprovalOptions,
   ProviderPolicyContext,
   ProviderReviewTarget,
+  SentinelFailureJob,
+  SentinelFailureRun,
+  SentinelFailureStep,
+  SentinelListFailureRunsRequest,
+  SentinelProviderAdapter,
+  SentinelRepositoryRef,
+  SentinelResolvePullRequestOptions,
+  SentinelUnresolvedComment,
   ProviderTargetExtractionResult,
   PullContext
 } from "./providers/types";

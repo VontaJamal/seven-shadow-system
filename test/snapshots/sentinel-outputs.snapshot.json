@@ -1,0 +1,7 @@
+{
+  "commentsMarkdown": "## Unresolved Comments (1)\n\n### src/providers/github.ts:42\n**@reviewer** (1d ago)\n> Handle missing token fallback.\n",
+  "commentsXml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<unresolvedComments count=\"1\">\n  <comment file=\"src/providers/github.ts\" line=\"42\" author=\"reviewer\" createdAt=\"2026-02-20T18:00:00.000Z\" url=\"https://example.com/comment/1\">\n    <body>Handle missing token fallback.</body>\n  </comment>\n</unresolvedComments>\n",
+  "failuresMarkdown": "## Failing Checks (1)\n\n### .github/workflows/ci.yml — \"Run tests\" (failed)\n```\nFAIL test/conformance.test.ts\nError: expected block\n```\n",
+  "lintMarkdown": "## Lint Findings (1)\n\n- [ERROR] src/providers/registry.ts:8:10 - tsc - Property 'verify' does not exist on type 'Provider'.\n",
+  "testQualityMarkdown": "## Test Quality Report\n\nScanned path: `/repo/test`\nTotal tests discovered: 2\n\n### Non-Behavioral Test Names (1 flagged)\n- `test/auth.test.ts:45` - `it works` - name is too generic and does not describe expected behavior\n\n### Behavioral Tests (Good Examples)\n- returns block when token missing in approval check\n\n### Coverage vs Test Count\n- Tests added in diff: 12\n- Tests removed in diff: 3\n- Net lines of test code: 9\n- Code lines added in diff: 3\n- Coverage delta: n/a\n- Inflation warning: potential test padding detected (tests added exceed 2x code lines added)\n- Note: Coverage delta unavailable; inflation/consolidation checks use test/code ratio heuristics.\n"
+}

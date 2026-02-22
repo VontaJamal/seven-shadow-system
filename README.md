@@ -18,6 +18,31 @@ npm test
 npm run guard:seven-shadow -- --event examples/pr_review_event.json --event-name pull_request_review
 ```
 
+## CLI
+
+Primary binary aliases:
+
+- `sss`
+- `seven-shadow-system`
+
+Guard mode remains backward compatible:
+
+```bash
+seven-shadow-system --policy config/seven-shadow-system.policy.json --event examples/pr_review_event.json --event-name pull_request_review
+sss guard --policy config/seven-shadow-system.policy.json --event examples/pr_review_event.json --event-name pull_request_review
+```
+
+Sentinel Eye commands (GitHub-first in this phase):
+
+```bash
+sss comments --pr 123 --repo owner/repo --format md
+sss failures --pr 123 --repo owner/repo --format md
+sss lint --pr 123 --repo owner/repo --format json
+sss test-quality --path test --format md
+```
+
+Full command reference: `docs/sentinel-eye.md`
+
 ## What Decision You Get
 
 Each run ends with one result:
@@ -75,9 +100,19 @@ You can:
 ## Core Files
 
 - Engine: `src/sevenShadowSystem.ts`
+- CLI dispatcher: `src/cli.ts`
+- Sentinel commands: `src/commands/`
+- Log parsers: `src/parsers/`
 - Tests: `test/sevenShadowSystem.test.ts`
 - Submodule installer: `scripts/wire-submodule.sh`
 - Integration guide: `references/submodule-integration.md`
+
+## Security and Quality Gates
+
+- CI + conformance + provider contracts + accessibility snapshots
+- Supply-chain checks (dependency review + Scorecard)
+- Secret scanning workflow (`.github/workflows/secret-scan.yml`)
+- PR template aligned to all Seven Shadow domains (`.github/pull_request_template.md`)
 
 ## Open Source
 

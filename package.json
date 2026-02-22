@@ -6,7 +6,8 @@
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "bin": {
-    "seven-shadow-system": "dist/src/sevenShadowSystem.js"
+    "seven-shadow-system": "dist/src/cli.js",
+    "sss": "dist/src/cli.js"
   },
   "files": [
     "dist/src/",
@@ -19,9 +20,11 @@
     "config/",
     "templates/workflows/",
     "references/submodule-integration.md",
+    "references/armory-sync.md",
     "docs/accessibility-contract.md",
     "docs/branch-protection.md",
     "docs/conformance-pack.md",
+    "docs/sentinel-eye.md",
     "docs/release-trust-chain.md",
     "docs/policy-governance.md",
     "docs/runbooks/",
@@ -34,7 +37,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "npm run build && node --test dist/test/*.test.js",
-    "test:accessibility": "npm run build && node --test dist/test/accessibility.snapshot.test.js",
+    "test:accessibility": "npm run build && node --test dist/test/accessibility.snapshot.test.js dist/test/sentinelOutputs.snapshot.test.js",
     "test:provider-contract": "npm run build && node --test dist/test/providers.contract.test.js",
     "test:property": "npm run build && node --test dist/test/property/*.test.js",
     "test:fuzz": "npm run build && node --test dist/test/fuzz/*.test.js",
@@ -58,6 +61,10 @@
     "release:verify": "npm run check && npm run conformance && npm run test:provider-contract && npm run provider-fixtures:bundle && npm run trust:lint -- --trust-store config/policy-trust-store.sample.json --format json && npm run trust:lint -- --trust-store config/policy-trust-store.v2.sample.json --format json && npm run soak:rc -- --iterations 3 --report .seven-shadow/release/rc-soak.json",
     "release:rc:prepare": "npm run release:verify && npm run sbom:generate -- --output sbom.cdx.json",
     "check": "npm run test && npm run validate:schemas && npm run validate:security-gates",
+    "sentinel:comments": "npm run build && node dist/src/cli.js comments",
+    "sentinel:failures": "npm run build && node dist/src/cli.js failures",
+    "sentinel:lint": "npm run build && node dist/src/cli.js lint",
+    "sentinel:test-quality": "npm run build && node dist/src/cli.js test-quality",
     "guard:seven-shadow": "npm run build && node dist/src/sevenShadowSystem.js --policy config/seven-shadow-system.policy.json",
     "migrate:policy": "npm run build && node dist/scripts/migrate-policy-v1-to-v2.js"
   },
@@ -65,6 +72,7 @@
     "node": ">=20.17.0"
   },
   "dependencies": {
+    "fflate": "^0.8.2",
     "safe-regex2": "^5.0.0",
     "sigstore": "^4.1.0",
     "zod": "^3.24.1"

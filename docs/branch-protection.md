@@ -19,6 +19,7 @@ Use these settings for `main` to enforce baseline quality:
 - `CI / conformance`
 - `CI / provider-contract`
 - `CI / accessibility`
+- `Secret Scan / secret-scan`
 - `GitLab Smoke / smoke`
 - `Supply Chain / dependency-review`
 - `Supply Chain / scorecard`
@@ -29,3 +30,4 @@ Use these settings for `main` to enforce baseline quality:
 - Enable stale review dismissal on new commits.
 - Require conversation resolution before merge.
 - Enforce DCO sign-off in contribution policy.
+- Use `.github/pull_request_template.md` so every PR explicitly covers Security, Accessibility, Testing, Execution, Scales, Value, and Aesthetics.

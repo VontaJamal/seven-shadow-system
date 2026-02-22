@@ -28,4 +28,5 @@ Accessibility is a release gate for Seven Shadow System output surfaces.
 
 - Unit tests assert plain-language decision summaries.
 - Snapshot checks validate report structure for JSON/Markdown/SARIF (`test/accessibility.snapshot.test.ts`).
+- Snapshot checks validate Sentinel Eye command output readability/structure (`test/sentinelOutputs.snapshot.test.ts`).
 - PR review checklist must include accessibility review line item.
