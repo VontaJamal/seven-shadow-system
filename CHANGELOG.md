@@ -2,7 +2,7 @@
 
 All notable changes to Seven Shadow System are documented in this file.
 
-## Unreleased (RC prep)
+## 0.3.0-rc.4 - 2026-02-22
 
 ### Changed
 
@@ -29,14 +29,7 @@ All notable changes to Seven Shadow System are documented in this file.
 
 ### Notes
 
-- This is an RC prep pass only:
-  - no `package.json` version bump
-  - no `v*` tag creation
-  - no npm publish
-- RC cut handoff remains separate:
-  - update `package.json` version
-  - create matching signed annotated tag `v<packageVersion>`
-  - push tag to trigger `.github/workflows/release.yml`
+- RC candidate cut for the civilian-first settings terminology and Seven Shadows documentation alignment pass.
 
 ## 0.3.0-rc.7 - 2026-02-22
 
