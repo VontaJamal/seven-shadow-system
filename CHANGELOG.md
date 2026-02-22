@@ -2,6 +2,42 @@
 
 All notable changes to Seven Shadow System are documented in this file.
 
+## Unreleased (RC prep)
+
+### Changed
+
+- Dashboard settings terminology is now civilian-friendly in both modes:
+  - `Shadow Controls` -> `Triage Settings`
+  - `Inbox Shadow` -> `Inbox`
+  - `Patterns Shadow` -> `Patterns`
+  - `Score Shadow` -> `Scoring`
+  - `Digest + Execution Shadows` -> `Processing Limits`
+  - `Apply Shadow Controls` -> `Apply Settings`
+- README now includes an explicit `The Seven Shadows` section listing:
+  - Aesthetics
+  - Security
+  - Access
+  - Testing
+  - Execution
+  - Scales
+  - Value
+- Seven Shadows doctrine/checklist terminology now uses `Access` in doctrine contexts:
+  - `AGENTS.md` doctrine list
+  - `.github/pull_request_template.md` checklist + impact section
+  - `docs/branch-protection.md` Seven Shadows enumeration
+- Dashboard unit/e2e tests now assert plain-language settings labels and mode parity behavior.
+
+### Notes
+
+- This is an RC prep pass only:
+  - no `package.json` version bump
+  - no `v*` tag creation
+  - no npm publish
+- RC cut handoff remains separate:
+  - update `package.json` version
+  - create matching signed annotated tag `v<packageVersion>`
+  - push tag to trigger `.github/workflows/release.yml`
+
 ## 0.3.0-rc.7 - 2026-02-22
 
 ### Added
