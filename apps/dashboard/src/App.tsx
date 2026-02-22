@@ -7,9 +7,15 @@ import { ScoreView } from "./components/ScoreView";
 import { SettingsPanel } from "./components/SettingsPanel";
 import { StaleBanner } from "./components/StaleBanner";
 import { TopBar } from "./components/TopBar";
-import { getDashboardSnapshot, getDashboardStatus, requestDashboardRefresh } from "./lib/api";
+import {
+  getDashboardConfig,
+  getDashboardSnapshot,
+  getDashboardStatus,
+  requestDashboardRefresh,
+  updateDashboardConfig
+} from "./lib/api";
 import { dismissOnboarding, getInitialMode, isOnboardingDismissed, persistMode } from "./lib/mode";
-import type { DashboardMode, DashboardSnapshot, DashboardStatus } from "./lib/types";
+import type { DashboardConfigState, DashboardMode, DashboardSnapshot, DashboardStatus, SentinelEyeConfig } from "./lib/types";
 
 type DashboardTab = "digest" | "inbox" | "score" | "patterns";
 
@@ -22,6 +28,11 @@ export function App(): JSX.Element {
   const [errorText, setErrorText] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [onboardingVisible, setOnboardingVisible] = useState(!isOnboardingDismissed());
+  const [configState, setConfigState] = useState<DashboardConfigState | null>(null);
+  const [configDraft, setConfigDraft] = useState<SentinelEyeConfig | null>(null);
+  const [configBusy, setConfigBusy] = useState(false);
+  const [configError, setConfigError] = useState<string | null>(null);
+  const [configSavedAt, setConfigSavedAt] = useState<string | null>(null);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-mode", mode);
@@ -31,7 +42,7 @@ export function App(): JSX.Element {
   useEffect(() => {
     let cancelled = false;
 
-    async function load(): Promise<void> {
+    async function load(includeConfig: boolean): Promise<void> {
       try {
         const [statusPayload, snapshotPayload] = await Promise.all([getDashboardStatus(), getDashboardSnapshot()]);
         if (cancelled) {
@@ -41,6 +52,26 @@ export function App(): JSX.Element {
         setStatus(statusPayload);
         setSnapshot(snapshotPayload);
         setErrorText(null);
+
+        if (includeConfig) {
+          try {
+            const configPayload = await getDashboardConfig();
+            if (cancelled) {
+              return;
+            }
+
+            setConfigState(configPayload);
+            setConfigDraft(configPayload.config);
+            setConfigError(null);
+          } catch (error) {
+            if (cancelled) {
+              return;
+            }
+
+            const message = error instanceof Error ? error.message : String(error);
+            setConfigError(message.slice(0, 260));
+          }
+        }
       } catch (error) {
         if (cancelled) {
           return;
@@ -51,9 +82,9 @@ export function App(): JSX.Element {
       }
     }
 
-    void load();
+    void load(true);
     const pollId = window.setInterval(() => {
-      void load();
+      void load(false);
     }, 10_000);
 
     return () => {
@@ -61,6 +92,37 @@ export function App(): JSX.Element {
       window.clearInterval(pollId);
     };
   }, []);
+
+  useEffect(() => {
+    if (!settingsOpen || configState) {
+      return;
+    }
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        const configPayload = await getDashboardConfig();
+        if (cancelled) {
+          return;
+        }
+
+        setConfigState(configPayload);
+        setConfigDraft(configPayload.config);
+        setConfigError(null);
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+
+        const message = error instanceof Error ? error.message : String(error);
+        setConfigError(message.slice(0, 260));
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [configState, settingsOpen]);
 
   const generatedAt = snapshot?.meta.generatedAt ?? status?.generatedAt ?? null;
 
@@ -78,6 +140,37 @@ export function App(): JSX.Element {
     } finally {
       setRefreshing(false);
     }
+  }
+
+  async function handleConfigSave(): Promise<void> {
+    if (!configDraft) {
+      return;
+    }
+
+    setConfigBusy(true);
+
+    try {
+      const saved = await updateDashboardConfig(configDraft);
+      setConfigState(saved);
+      setConfigDraft(saved.config);
+      setConfigError(null);
+      setConfigSavedAt(new Date().toISOString());
+
+      const refreshed = await requestDashboardRefresh();
+      setStatus(refreshed.status);
+      setSnapshot(refreshed.snapshot);
+      setErrorText(null);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setConfigError(message.slice(0, 260));
+    } finally {
+      setConfigBusy(false);
+    }
+  }
+
+  function handleConfigReset(): void {
+    setConfigDraft(configState?.config ?? null);
+    setConfigError(null);
   }
 
   const hasSnapshot = snapshot !== null;
@@ -131,6 +224,16 @@ export function App(): JSX.Element {
         onClose={() => {
           setSettingsOpen(false);
         }}
+        configState={configState}
+        configDraft={configDraft}
+        onConfigChange={setConfigDraft}
+        configBusy={configBusy}
+        configError={configError}
+        configSavedAt={configSavedAt}
+        onSaveConfig={() => {
+          void handleConfigSave();
+        }}
+        onResetConfig={handleConfigReset}
       />
 
       {onboardingVisible ? (

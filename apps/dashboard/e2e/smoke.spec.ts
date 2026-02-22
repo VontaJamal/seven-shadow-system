@@ -76,6 +76,48 @@ const statusFixture = {
   refreshIntervalSeconds: 120
 };
 
+const configFixture = {
+  configPath: ".seven-shadow/sentinel-eye.json",
+  source: "default",
+  config: {
+    version: 1,
+    inbox: {
+      requireNotificationsScope: true,
+      includeReadByDefault: false
+    },
+    limits: {
+      maxNotifications: 100,
+      maxPullRequests: 50,
+      maxFilesPerPullRequest: 300,
+      maxFailureRunsPerPullRequest: 5,
+      maxLogBytesPerJob: 5000000,
+      maxDigestItems: 20
+    },
+    patterns: {
+      minClusterSize: 2,
+      pathDepth: 2,
+      maxTitleTokens: 6,
+      minTitleTokenLength: 3
+    },
+    scoring: {
+      caps: {
+        failingRuns: 5,
+        unresolvedComments: 20,
+        changedFiles: 250,
+        linesChanged: 6000,
+        duplicatePeers: 20
+      },
+      weights: {
+        failingRuns: 35,
+        unresolvedComments: 30,
+        changedFiles: 15,
+        linesChanged: 10,
+        duplicatePeers: 10
+      }
+    }
+  }
+};
+
 test("dashboard app renders triage suite", async ({ page }) => {
   await page.route("**/api/v1/dashboard/status", async (route) => {
     await route.fulfill({
@@ -104,6 +146,23 @@ test("dashboard app renders triage suite", async ({ page }) => {
     });
   });
 
+  await page.route("**/api/v1/dashboard/config", async (route) => {
+    if (route.request().method() === "PUT") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(configFixture)
+      });
+      return;
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(configFixture)
+    });
+  });
+
   await page.goto("/");
 
   await expect(page.getByRole("heading", { name: "Maintainer Dashboard" })).toBeVisible();
@@ -114,4 +173,6 @@ test("dashboard app renders triage suite", async ({ page }) => {
 
   await page.getByRole("button", { name: "Open dashboard settings" }).click();
   await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Shadow Controls" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Apply Shadow Controls" })).toBeVisible();
 });

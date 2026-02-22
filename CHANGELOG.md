@@ -2,6 +2,29 @@
 
 All notable changes to Seven Shadow System are documented in this file.
 
+## 0.3.0-rc.7 - 2026-02-22
+
+### Added
+
+- Dashboard settings control plane for maintainer-configurable shadow behavior.
+- Dashboard config API:
+  - `GET /api/v1/dashboard/config`
+  - `PUT /api/v1/dashboard/config`
+- GUI shadow control groups for:
+  - Inbox
+  - Patterns
+  - Score
+  - Digest/Execution bounds
+- Deterministic config persistence helpers:
+  - canonical serialization
+  - validated write path for Sentinel Eye config
+
+### Changed
+
+- Dashboard now refreshes triage snapshot immediately after successful config save.
+- Dashboard config endpoint can bootstrap defaults for missing `--config` files, enabling first-save setup directly from GUI.
+- Dashboard docs updated to describe settings-based control workflow.
+
 ## 0.3.0-rc.6 - 2026-02-22
 
 ### Added
