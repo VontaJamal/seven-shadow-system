@@ -22,23 +22,23 @@ npm run guard:seven-shadow -- --event examples/pr_review_event.json --event-name
 
 Primary binary aliases:
 
-- `sss`
+- `7s`
 - `seven-shadow-system`
 
 Guard mode remains backward compatible:
 
 ```bash
 seven-shadow-system --policy config/seven-shadow-system.policy.json --event examples/pr_review_event.json --event-name pull_request_review
-sss guard --policy config/seven-shadow-system.policy.json --event examples/pr_review_event.json --event-name pull_request_review
+7s guard --policy config/seven-shadow-system.policy.json --event examples/pr_review_event.json --event-name pull_request_review
 ```
 
 Sentinel Eye commands (GitHub-first in this phase):
 
 ```bash
-sss comments --pr 123 --repo owner/repo --format md
-sss failures --pr 123 --repo owner/repo --format md
-sss lint --pr 123 --repo owner/repo --format json
-sss test-quality --path test --format md
+7s comments --pr 123 --repo owner/repo --format md
+7s failures --pr 123 --repo owner/repo --format md
+7s lint --pr 123 --repo owner/repo --format json
+7s test-quality --path test --format md
 ```
 
 Full command reference: `docs/sentinel-eye.md`
@@ -124,3 +124,4 @@ You can:
 [Explore the Vault →](https://github.com/VontaJamal/shadow-vault)
 
 🏴‍☠️ [Sovereign](https://github.com/VontaJamal) — The Shadow Dominion.
+

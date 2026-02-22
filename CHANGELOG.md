@@ -6,11 +6,11 @@ All notable changes to Seven Shadow System are documented in this file.
 
 ### Added
 
-- Sentinel Eye subcommand dispatcher (`sss`) with backward-compatible guard mode:
-  - `sss comments`
-  - `sss failures`
-  - `sss lint`
-  - `sss test-quality`
+- Sentinel Eye subcommand dispatcher (`7s`) with backward-compatible guard mode:
+  - `7s comments`
+  - `7s failures`
+  - `7s lint`
+  - `7s test-quality`
 - GitHub Sentinel provider adapter for unresolved review threads, failing CI run/job discovery, and zipped Actions log retrieval.
 - Bounded CI log extraction controls for Sentinel commands:
   - `--max-lines-per-run` (default `200`)
@@ -32,7 +32,7 @@ All notable changes to Seven Shadow System are documented in this file.
 
 ### Changed
 
-- Package binary now exposes both `seven-shadow-system` and `sss` command aliases via the new CLI dispatcher.
+- Package binary now exposes both `seven-shadow-system` and `7s` command aliases via the new CLI dispatcher.
 - Accessibility snapshot script now covers both guard and Sentinel output snapshots.
 - Branch protection guidance now includes secret scan as a required check.
 

@@ -45,7 +45,7 @@ export function parseCommentsArgs(argv: string[]): CommentsArgs {
     if (token === "--help" || token === "-h") {
       throw makeError(
         "E_SENTINEL_HELP",
-        "Usage: sss comments [--pr <number>] [--repo <owner/repo>] [--provider github|gitlab|bitbucket] [--format md|xml|json]"
+        "Usage: 7s comments [--pr <number>] [--repo <owner/repo>] [--provider github|gitlab|bitbucket] [--format md|xml|json]"
       );
     }
 

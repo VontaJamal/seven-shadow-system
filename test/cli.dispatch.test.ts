@@ -8,7 +8,7 @@ import { runCli } from "../src/cli";
 import { GuardPolicySchema } from "../src/sevenShadowSystem";
 
 test("runCli supports explicit guard and implicit guard modes", async () => {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "sss-cli-dispatch-"));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "7s-cli-dispatch-"));
 
   try {
     const policyPath = path.join(tempDir, "policy.json");

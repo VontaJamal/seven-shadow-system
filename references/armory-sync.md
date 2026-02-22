@@ -14,9 +14,9 @@ This file stages external reference payloads that should be copied into the sepa
 
 - Source: public post by Jarred Sumner (`@jarredsumner`) requesting unresolved PR comment context, failing CI extraction, and lint extraction for agent workflows.
 - Product mapping in this repo:
-  - `sss comments`
-  - `sss failures`
-  - `sss lint`
+  - `7s comments`
+  - `7s failures`
+  - `7s lint`
 - Local reference: `BUILD-SPEC-SENTINEL-EYE.md`
 - Classification: `agentic-engineering`, `pr-governance`, `ci-intelligence`
 
@@ -24,7 +24,7 @@ This file stages external reference payloads that should be copied into the sepa
 
 - Source: public post from Nnenna on behavioral test naming and consolidation (fewer tests, clearer specs, maintained coverage).
 - Product mapping in this repo:
-  - `sss test-quality`
+  - `7s test-quality`
 - Local reference: `BUILD-SPEC-SENTINEL-EYE.md`
 - Classification: `testing-doctrine`, `behavioral-specs`, `quality-over-quantity`
 

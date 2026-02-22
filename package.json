@@ -7,7 +7,7 @@
   "types": "dist/src/index.d.ts",
   "bin": {
     "seven-shadow-system": "dist/src/cli.js",
-    "sss": "dist/src/cli.js"
+    "7s": "dist/src/cli.js"
   },
   "files": [
     "dist/src/",

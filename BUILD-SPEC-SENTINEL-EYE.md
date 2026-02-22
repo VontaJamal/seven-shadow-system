@@ -6,10 +6,10 @@ Jarred Sumner (@jarredsumner, Bun creator) publicly requested these exact capabi
 ## What It Does
 Extends the Seven Shadow System guard from "detect and block" to "detect, block, and tell the agent exactly how to fix it." Three new capabilities:
 
-### 1. Unresolved PR Review Comments (`sss comments`)
+### 1. Unresolved PR Review Comments (`7s comments`)
 Pull unresolved review comments from a PR as structured, agent-readable output.
 
-**Input:** `sss comments --pr <number> [--repo <owner/repo>] [--format md|xml|json]`
+**Input:** `7s comments --pr <number> [--repo <owner/repo>] [--format md|xml|json]`
 
 **Output (markdown, default):**
 ```markdown
@@ -44,17 +44,17 @@ Pull unresolved review comments from a PR as structured, agent-readable output.
 ```
 
 **Behavior:**
-- Uses GitHub/GitLab/Bitbucket provider (same provider registry SSS already has)
+- Uses GitHub/GitLab/Bitbucket provider (same provider registry 7s already has)
 - Only shows UNRESOLVED comments (skip resolved/outdated)
 - `file:line` is mandatory in output — agents need exact locations
 - Sort by file path, then line number
 - If no `--repo`, detect from `.git/config` remote
 - If no `--pr`, find the open PR for current branch
 
-### 2. Failing CI Log Extraction (`sss failures`)
+### 2. Failing CI Log Extraction (`7s failures`)
 Pull failing GitHub Action (or GitLab CI / Bitbucket Pipeline) logs, filtered to the actual error.
 
-**Input:** `sss failures [--pr <number>] [--run <id>] [--repo <owner/repo>] [--format md|json]`
+**Input:** `7s failures [--pr <number>] [--run <id>] [--repo <owner/repo>] [--format md|json]`
 
 **Output (markdown):**
 ```markdown
@@ -88,10 +88,10 @@ npm audit found 2 vulnerabilities
 - If `--run` specified, show that specific run only
 - Group by workflow file, then by step
 
-### 3. Lint Error Extraction (`sss lint`)
+### 3. Lint Error Extraction (`7s lint`)
 Parse lint/type-check/test output from CI into structured format.
 
-**Input:** `sss lint [--pr <number>] [--run <id>] [--format md|json]`
+**Input:** `7s lint [--pr <number>] [--run <id>] [--format md|json]`
 
 **Output (json):**
 ```json
@@ -119,14 +119,14 @@ Parse lint/type-check/test output from CI into structured format.
 ```
 
 **Behavior:**
-- Reuses `sss failures` log fetching under the hood
+- Reuses `7s failures` log fetching under the hood
 - Parses known tool output formats:
   - ESLint: `file:line:col: severity rule message`
   - TypeScript: `file(line,col): error TSxxxx: message`
   - Jest: `FAIL file` + assertion blocks
   - Vitest: same as Jest
   - Python (pytest, flake8, mypy): their standard formats
-- Unknown formats: fall back to raw error line extraction (same as `sss failures`)
+- Unknown formats: fall back to raw error line extraction (same as `7s failures`)
 - Deduplicate: same file+line+message = one entry
 - Sort by file, then line
 
@@ -136,9 +136,9 @@ Parse lint/type-check/test output from CI into structured format.
 ```
 src/
   commands/
-    comments.ts    # sss comments
-    failures.ts    # sss failures  
-    lint.ts        # sss lint
+    comments.ts    # 7s comments
+    failures.ts    # 7s failures  
+    lint.ts        # 7s lint
   parsers/
     eslint.ts
     typescript.ts
@@ -153,12 +153,12 @@ Add to existing CLI entry point. These are NEW subcommands alongside the existin
 
 ```bash
 # Existing
-sss guard --event ... --event-name ...
+7s guard --event ... --event-name ...
 
 # New
-sss comments [--pr N] [--format md|xml|json]
-sss failures [--pr N] [--format md|json]  
-sss lint [--pr N] [--format md|json]
+7s comments [--pr N] [--format md|xml|json]
+7s failures [--pr N] [--format md|json]  
+7s lint [--pr N] [--format md|json]
 ```
 
 ### Auth
@@ -177,7 +177,7 @@ No new auth mechanism needed.
 
 ## Test Criteria
 
-### sss comments
+### 7s comments
 - [ ] Returns unresolved comments with correct file:line
 - [ ] Skips resolved comments
 - [ ] Auto-detects repo from git config
@@ -186,14 +186,14 @@ No new auth mechanism needed.
 - [ ] Works with GitHub, GitLab, Bitbucket providers
 - [ ] Empty state: "No unresolved comments" (not an error)
 
-### sss failures
+### 7s failures
 - [ ] Fetches failed check runs only (skip passing)
 - [ ] Filters logs to error context (not full 10K line dump)
 - [ ] Respects 200-line cap per run
 - [ ] Groups by workflow → step
 - [ ] Works when no CI has run yet (clean message)
 
-### sss lint
+### 7s lint
 - [ ] Parses ESLint output correctly
 - [ ] Parses TypeScript errors correctly
 - [ ] Parses Jest failures correctly
@@ -202,7 +202,7 @@ No new auth mechanism needed.
 - [ ] JSON output is valid and parseable
 
 ## Style Guide
-- Follow existing SSS patterns (provider registry, policy config structure)
+- Follow existing 7s patterns (provider registry, policy config structure)
 - TypeScript, strict mode
 - No new dependencies unless absolutely necessary (prefer built-in fetch, built-in zip)
 - Error messages should be actionable, not cryptic
@@ -214,13 +214,13 @@ No new auth mechanism needed.
 - Don't build notification/webhook listeners — this is pull-based CLI
 - Don't touch the existing guard logic — these are parallel commands
 
-## 4. Shadow of Testing — Behavioral Test Quality (`sss test-quality`)
+## 4. Shadow of Testing — Behavioral Test Quality (`7s test-quality`)
 
 Inspired by @nnennahacks (Feb 21, 2026) — she made Claude Code produce behavioral tests that read as specifications, removed 11 redundant tests, deleted 293 lines, and MAINTAINED 100% coverage. Fewer, better tests.
 
 This extends the Shadow of Testing from "do tests pass" to "are the tests worth having."
 
-**Input:** `sss test-quality [--path <test-dir>] [--format md|json]`
+**Input:** `7s test-quality [--path <test-dir>] [--format md|json]`
 
 **Output (markdown):**
 ```markdown
@@ -275,4 +275,4 @@ This usually means padding, not testing.
 - "Removing tests that maintain coverage is an improvement, not a regression."
 
 ## Priority
-Ship `sss comments` first — it's the simplest and highest value. Then `sss failures`. Then `sss lint` (which builds on failures). Then `sss test-quality` (Shadow of Testing upgrade).
+Ship `7s comments` first — it's the simplest and highest value. Then `7s failures`. Then `7s lint` (which builds on failures). Then `7s test-quality` (Shadow of Testing upgrade).

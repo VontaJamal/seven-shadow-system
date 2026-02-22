@@ -64,7 +64,7 @@ export function parseTestQualityArgs(argv: string[]): TestQualityArgs {
     if (token === "--help" || token === "-h") {
       throw makeError(
         "E_SENTINEL_HELP",
-        "Usage: sss test-quality [--path <dir>] [--format md|json] [--base-ref <ref>] [--head-ref <ref>] [--provider github|gitlab|bitbucket] [--repo <owner/repo>] [--pr <number>]"
+        "Usage: 7s test-quality [--path <dir>] [--format md|json] [--base-ref <ref>] [--head-ref <ref>] [--provider github|gitlab|bitbucket] [--repo <owner/repo>] [--pr <number>]"
       );
     }
 

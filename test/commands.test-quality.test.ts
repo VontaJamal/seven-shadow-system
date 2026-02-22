@@ -13,7 +13,7 @@ test("parseTestQualityArgs defaults to markdown", () => {
 });
 
 test("buildTestQualityReport flags non-behavioral names", async () => {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "sss-test-quality-"));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "7s-test-quality-"));
 
   try {
     const testDir = path.join(tempDir, "test");

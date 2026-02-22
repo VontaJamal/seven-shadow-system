@@ -4,12 +4,12 @@ Sentinel Eye extends Seven Shadow System with agent-readable PR intelligence.
 
 ## Commands
 
-### `sss comments`
+### `7s comments`
 
 List unresolved PR review comments with deterministic `file:line` locations.
 
 ```bash
-sss comments --pr 123 --repo owner/repo --format md
+7s comments --pr 123 --repo owner/repo --format md
 ```
 
 Flags:
@@ -19,12 +19,12 @@ Flags:
 - `--provider github|gitlab|bitbucket`: provider name (default: `github`)
 - `--format md|xml|json`: output format (default: `md`)
 
-### `sss failures`
+### `7s failures`
 
 Extract failing CI logs and keep only high-signal error context.
 
 ```bash
-sss failures --pr 123 --repo owner/repo --format md
+7s failures --pr 123 --repo owner/repo --format md
 ```
 
 Flags:
@@ -40,15 +40,15 @@ Flags:
 - `--max-log-bytes <n>`: max bytes to process per job log (default: `5000000`)
 - `--match <token,token,...>`: match tokens for high-signal filtering
 
-### `sss lint`
+### `7s lint`
 
 Parse lint/type/test failures from CI logs into structured findings.
 
 ```bash
-sss lint --pr 123 --repo owner/repo --format json
+7s lint --pr 123 --repo owner/repo --format json
 ```
 
-Flags are the same as `sss failures`, with `--format` defaulting to `json`.
+Flags are the same as `7s failures`, with `--format` defaulting to `json`.
 
 Supported parser families:
 
@@ -59,12 +59,12 @@ Supported parser families:
 - Python (`pytest`, `flake8`, `mypy`)
 - Generic fallback parser
 
-### `sss test-quality`
+### `7s test-quality`
 
 Evaluate test naming quality and basic inflation/consolidation signals.
 
 ```bash
-sss test-quality --path test --format md
+7s test-quality --path test --format md
 ```
 
 Flags:
@@ -94,4 +94,4 @@ Sentinel commands reuse existing provider token conventions:
 Guard mode is unchanged:
 
 - `seven-shadow-system --policy ...` still runs guard mode
-- `sss guard --policy ...` runs the same guard mode through subcommand dispatch
+- `7s guard --policy ...` runs the same guard mode through subcommand dispatch

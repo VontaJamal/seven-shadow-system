@@ -60,7 +60,7 @@ export function parseFailuresArgs(argv: string[]): FailuresArgs {
     if (token === "--help" || token === "-h") {
       throw makeError(
         "E_SENTINEL_HELP",
-        "Usage: sss failures [--pr <number>] [--run <id>] [--repo <owner/repo>] [--provider github|gitlab|bitbucket] [--format md|json] [--context-lines <n>] [--max-lines-per-run <n>] [--max-runs <n>] [--max-log-bytes <n>] [--match token,token]"
+        "Usage: 7s failures [--pr <number>] [--run <id>] [--repo <owner/repo>] [--provider github|gitlab|bitbucket] [--format md|json] [--context-lines <n>] [--max-lines-per-run <n>] [--max-runs <n>] [--max-log-bytes <n>] [--match token,token]"
       );
     }
 
