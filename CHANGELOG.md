@@ -2,6 +2,38 @@
 
 All notable changes to Seven Shadow System are documented in this file.
 
+## 0.3.0-rc.5 - 2026-02-22
+
+### Added
+
+- Sentinel Eye triage command family:
+  - `7s patterns`
+  - `7s inbox`
+  - `7s score`
+  - `7s digest`
+- Sentinel Eye deterministic config contract:
+  - default path `.seven-shadow/sentinel-eye.json`
+  - schema `schemas/sentinel-eye-v1.schema.json`
+  - sample `config/sentinel-eye.sample.json`
+- Shared triage engine for deterministic ranking and pattern clustering (`src/commands/shared/triageEngine.ts`).
+- GitHub Sentinel adapter support for:
+  - notification listing
+  - open PR listing
+  - PR summary retrieval
+  - PR file listing
+- Additive npm script aliases:
+  - `sentinel:patterns`, `sentinel:inbox`, `sentinel:score`, `sentinel:digest`
+  - `eye:*` aliases mirroring Sentinel command scripts
+- Naming guard test to prevent legacy doctrine-name regressions in parent repo files.
+- RFC for triage suite expansion (`docs/rfcs/0001-sentinel-eye-triage-suite.md`).
+
+### Changed
+
+- Design-system submodule reference renamed from legacy path to `design/rinshari-eye`.
+- Canonical doctrine link updated to `https://github.com/VontaJamal/rinshari-eye`.
+- Sentinel Eye docs and README command references expanded for maintainer triage workflows.
+- Sentinel output snapshot coverage extended to include patterns/inbox/score/digest markdown surfaces.
+
 ## 0.3.0-rc.4 - 2026-02-21
 
 ### Added

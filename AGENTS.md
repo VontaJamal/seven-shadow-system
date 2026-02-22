@@ -9,20 +9,20 @@ Ship Seven Shadow System as an open, composable, submodule-first governance syst
 - Submodule wiring must be repeatable and idempotent.
 - CI must pass on pull requests before merge.
 
-<!-- RINSHARI-UI:START -->
+<!-- RINSHARI-EYE:START -->
 ## Design Preflight Requirement (Managed)
 For UI/UX change proposals, agents must do all of the following before implementation:
-0. Use Rinshari-UI doctrine source: `https://github.com/VontaJamal/rinshari-ui`
-1. Read `design/rinshari-ui/templates/design-preflight.md`.
+0. Use Rinshari Eye doctrine source: `https://github.com/VontaJamal/rinshari-eye`
+1. Read `design/rinshari-eye/templates/design-preflight.md`.
 2. Audit animation/motion choices and note keep/change decisions.
-3. Read relevant files in `design/rinshari-ui/principles/`.
+3. Read relevant files in `design/rinshari-eye/principles/`.
 4. Read `docs/site-soul-brief.md`.
 5. In PR/task output, include:
    - Applied principles
    - Site Soul alignment
    - Animation audit summary
    - AI intent map
-<!-- RINSHARI-UI:END -->
+<!-- RINSHARI-EYE:END -->
 
 ## Seven Shadow Doctrine
 Every release candidate should uphold:

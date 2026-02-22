@@ -65,6 +65,7 @@ async function run(): Promise<void> {
   const trustStoreV2SchemaPath = path.join(process.cwd(), "schemas", "policy-trust-store-v2.schema.json");
   const trustRolloutTargetsSchemaPath = path.join(process.cwd(), "schemas", "trust-rollout-targets-v1.schema.json");
   const providerContractFixturesSchemaPath = path.join(process.cwd(), "schemas", "provider-contract-fixtures-v1.schema.json");
+  const sentinelEyeSchemaPath = path.join(process.cwd(), "schemas", "sentinel-eye-v1.schema.json");
   const policyPath = path.join(process.cwd(), "config", "seven-shadow-system.policy.json");
   const overrideConstraintsPath = path.join(process.cwd(), "config", "policy-override-constraints.json");
   const trustStoreV1Path = path.join(process.cwd(), "config", "policy-trust-store.sample.json");
@@ -92,6 +93,7 @@ async function run(): Promise<void> {
     "providers",
     "bitbucket.v1.json"
   );
+  const sentinelEyeSamplePath = path.join(process.cwd(), "config", "sentinel-eye.sample.json");
 
   await validateSchemaInstance(policySchemaPath, policyPath, "policy-v2.schema.json", "config/seven-shadow-system.policy.json");
   await validateSchemaInstance(
@@ -141,6 +143,12 @@ async function run(): Promise<void> {
     providerContractBitbucketFixturePath,
     "provider-contract-fixtures-v1.schema.json",
     "conformance/provider-contract/providers/bitbucket.v1.json"
+  );
+  await validateSchemaInstance(
+    sentinelEyeSchemaPath,
+    sentinelEyeSamplePath,
+    "sentinel-eye-v1.schema.json",
+    "config/sentinel-eye.sample.json"
   );
 
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "seven-shadow-schema-"));

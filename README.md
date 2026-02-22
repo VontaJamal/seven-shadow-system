@@ -39,9 +39,19 @@ Sentinel Eye commands (GitHub-first in this phase):
 7s failures --pr 123 --repo owner/repo --format md
 7s lint --pr 123 --repo owner/repo --format json
 7s test-quality --path test --format md
+7s patterns --repo owner/repo --limit 20 --format md
+7s inbox --repo owner/repo --limit 20 --format md
+7s score --repo owner/repo --format md
+7s digest --repo owner/repo --limit 20 --format md
 ```
 
 Full command reference: `docs/sentinel-eye.md`
+
+Sentinel Eye config (optional):
+
+- default path: `.seven-shadow/sentinel-eye.json`
+- schema: `schemas/sentinel-eye-v1.schema.json`
+- sample: `config/sentinel-eye.sample.json`
 
 ## What Decision You Get
 
@@ -110,7 +120,7 @@ You can:
 
 - Engine: `src/sevenShadowSystem.ts`
 - CLI dispatcher: `src/cli.ts`
-- Sentinel commands: `src/commands/`
+- Sentinel command family (`comments`, `failures`, `lint`, `test-quality`, `patterns`, `inbox`, `score`, `digest`): `src/commands/`
 - Log parsers: `src/parsers/`
 - Tests: `test/sevenShadowSystem.test.ts`
 - Submodule installer: `scripts/wire-submodule.sh`
@@ -133,4 +143,3 @@ You can:
 [Explore the Vault →](https://github.com/VontaJamal/shadow-vault)
 
 🏴‍☠️ [Sovereign](https://github.com/VontaJamal) — The Shadow Dominion.
-

@@ -216,3 +216,192 @@ test("github sentinel decodes zipped job logs", async () => {
     globalThis.fetch = originalFetch;
   }
 });
+
+test("github sentinel lists notifications with pull request extraction", async () => {
+  const originalFetch = globalThis.fetch;
+
+  try {
+    globalThis.fetch = async (input: RequestInfo | URL): Promise<Response> => {
+      const url = typeof input === "string" ? input : input.toString();
+      if (url.includes("/notifications")) {
+        return new Response(
+          JSON.stringify([
+            {
+              id: "1",
+              reason: "review_requested",
+              unread: true,
+              updated_at: "2026-02-21T12:00:00.000Z",
+              repository: { full_name: "acme/platform" },
+              subject: {
+                type: "PullRequest",
+                title: "Fix runtime guard",
+                url: "https://api.github.com/repos/acme/platform/pulls/42"
+              }
+            },
+            {
+              id: "2",
+              reason: "subscribed",
+              unread: false,
+              updated_at: "2026-02-21T11:00:00.000Z",
+              repository: { full_name: "acme/platform" },
+              subject: {
+                type: "Issue",
+                title: "Issue update",
+                url: "https://api.github.com/repos/acme/platform/issues/11"
+              }
+            }
+          ]),
+          {
+            status: 200,
+            headers: { "content-type": "application/json" }
+          }
+        );
+      }
+
+      throw new Error(`Unexpected URL: ${url}`);
+    };
+
+    const notifications = await githubSentinelAdapter.listNotifications(
+      {
+        repo,
+        maxItems: 20,
+        includeRead: false
+      },
+      {
+        authToken: "token"
+      }
+    );
+
+    assert.equal(notifications.length, 2);
+    assert.equal(notifications[0]?.pullNumber, 42);
+    assert.equal(notifications[0]?.subjectType, "PullRequest");
+    assert.equal(notifications[1]?.pullNumber, null);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("github sentinel lists open pull requests, summary, and files", async () => {
+  const originalFetch = globalThis.fetch;
+
+  try {
+    globalThis.fetch = async (input: RequestInfo | URL): Promise<Response> => {
+      const url = typeof input === "string" ? input : input.toString();
+
+      if (url.includes("/pulls?")) {
+        return new Response(
+          JSON.stringify([
+            {
+              number: 42,
+              title: "Fix runtime guard",
+              state: "open",
+              draft: false,
+              user: { login: "maintainer" },
+              additions: 12,
+              deletions: 3,
+              changed_files: 2,
+              comments: 1,
+              review_comments: 2,
+              commits: 1,
+              created_at: "2026-02-21T10:00:00.000Z",
+              updated_at: "2026-02-21T12:00:00.000Z",
+              html_url: "https://github.com/acme/platform/pull/42",
+              head: { sha: "abc123" }
+            }
+          ]),
+          {
+            status: 200,
+            headers: { "content-type": "application/json" }
+          }
+        );
+      }
+
+      if (url.endsWith("/pulls/42")) {
+        return new Response(
+          JSON.stringify({
+            number: 42,
+            title: "Fix runtime guard",
+            state: "open",
+            draft: false,
+            user: { login: "maintainer" },
+            additions: 12,
+            deletions: 3,
+            changed_files: 2,
+            comments: 1,
+            review_comments: 2,
+            commits: 1,
+            created_at: "2026-02-21T10:00:00.000Z",
+            updated_at: "2026-02-21T12:00:00.000Z",
+            html_url: "https://github.com/acme/platform/pull/42",
+            head: { sha: "abc123" }
+          }),
+          {
+            status: 200,
+            headers: { "content-type": "application/json" }
+          }
+        );
+      }
+
+      if (url.includes("/pulls/42/files?")) {
+        return new Response(
+          JSON.stringify([
+            {
+              filename: "src/commands/score.ts",
+              status: "modified",
+              additions: 20,
+              deletions: 5,
+              changes: 25
+            },
+            {
+              filename: "src/commands/patterns.ts",
+              status: "added",
+              additions: 40,
+              deletions: 0,
+              changes: 40
+            }
+          ]),
+          {
+            status: 200,
+            headers: { "content-type": "application/json" }
+          }
+        );
+      }
+
+      throw new Error(`Unexpected URL: ${url}`);
+    };
+
+    const pulls = await githubSentinelAdapter.listOpenPullRequests(
+      repo,
+      {
+        maxPullRequests: 10
+      },
+      {
+        authToken: "token"
+      }
+    );
+    assert.equal(pulls.length, 1);
+    assert.equal(pulls[0]?.number, 42);
+
+    const summary = await githubSentinelAdapter.getPullRequestSummary(repo, 42, {
+      authToken: "token"
+    });
+    assert.equal(summary.title, "Fix runtime guard");
+
+    const files = await githubSentinelAdapter.listPullRequestFiles(
+      repo,
+      42,
+      {
+        maxFiles: 10
+      },
+      {
+        authToken: "token"
+      }
+    );
+
+    assert.equal(files.length, 2);
+    assert.equal(files[0]?.path, "src/commands/patterns.ts");
+    assert.equal(files[1]?.path, "src/commands/score.ts");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
