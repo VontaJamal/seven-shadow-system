@@ -2,6 +2,8 @@
 
 This file is scaffolded by `wire-submodule.sh --with-bundle-trust`.
 
+Follow these steps in order to create, sign, verify, and enable policy bundle mode.
+
 ## 1) Create an unsigned schema v2 bundle
 
 ```bash

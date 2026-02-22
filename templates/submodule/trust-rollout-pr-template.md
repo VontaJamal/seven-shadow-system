@@ -4,6 +4,8 @@ Generated at: `{{GENERATED_AT}}`
 Target repository: `{{TARGET_REPO}}`  
 Submodule path: `{{SUBMODULE_PATH}}`
 
+Use this template to keep trust rollout changes reviewable and auditable.
+
 ## Summary
 
 This PR scaffolds trust rollout assets for Seven Shadow System in an opt-in, fail-safe mode.

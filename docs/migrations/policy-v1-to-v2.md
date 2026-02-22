@@ -2,6 +2,8 @@
 
 Policy v2 adds runtime, report, and approvals blocks for explicit fail-closed behavior.
 
+This guide provides the safest upgrade path from legacy v1 policy files to v2.
+
 ## Automated Migration
 
 ```bash

@@ -4,6 +4,12 @@ Seven Shadow System is an open-source AI review guard for maintainers.
 
 It helps you detect and govern AI-influenced review content in pull requests and comments.
 
+## Quick Summary
+
+- Use this project to enforce deterministic review policy decisions (`pass`, `warn`, `block`).
+- It supports CLI usage, npm package usage, and submodule integration.
+- Start with the 3-minute local check, then wire it into CI for enforcement.
+
 ## The Seven Shadows
 
 | Shadow | Domain |
@@ -18,7 +24,7 @@ It helps you detect and govern AI-influenced review content in pull requests and
 
 ## Start Here (Beginner)
 
-You do not need to know Animate, advanced governance systems, or complicated CI tooling to start.
+You do not need advanced governance frameworks or complex CI setup to start.
 
 If you can run `npm` and edit a JSON file, you can use this.
 

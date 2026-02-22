@@ -4,6 +4,8 @@ Sentinel Eye Dashboard is the local GUI for maintainer triage workflows.
 
 It runs from the same deterministic report pipeline as `7s patterns`, `7s inbox`, `7s score`, and `7s digest`.
 
+Use this guide for dashboard startup, settings behavior, auth resolution, and endpoint references.
+
 ## Start
 
 ```bash

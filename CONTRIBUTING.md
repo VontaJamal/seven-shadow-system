@@ -2,6 +2,12 @@
 
 Thanks for helping build the open baseline for trustworthy AI PR review governance.
 
+## Quick Summary
+
+- Open an issue (and RFC when behavior changes) before implementation.
+- Keep changes deterministic, test-backed, and migration-aware.
+- Document security and accessibility impact in every PR.
+
 ## Core Expectations
 
 - Keep changes deterministic, auditable, and fail-closed by default.

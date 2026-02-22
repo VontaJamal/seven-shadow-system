@@ -2,6 +2,8 @@
 
 Use these settings for `main` to enforce baseline quality:
 
+This guidance lists the required checks and review controls that keep policy enforcement reliable.
+
 - Require pull request before merge.
 - Require approvals from CODEOWNERS.
 - Require status checks to pass before merging.

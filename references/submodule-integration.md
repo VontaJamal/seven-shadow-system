@@ -2,6 +2,8 @@
 
 Seven Shadow System is designed for idempotent submodule-first integration.
 
+This is the authoritative integration reference for consumer repository wiring and trust-rollout scaffolding.
+
 ## Standard Layout
 
 - `governance/seven-shadow-system` (submodule)

@@ -1,7 +1,13 @@
 # BUILD SPEC: Sentinel Eye — Agent PR Intelligence
 
+## Quick Summary
+
+- Sentinel Eye adds actionable PR triage intelligence for agents and maintainers.
+- It focuses on unresolved comments, failing CI extraction, and structured lint/test findings.
+- The scope is read-only triage support with deterministic outputs.
+
 ## Origin
-Jarred Sumner (@jarredsumner, Bun creator) publicly requested these exact capabilities for `gh` CLI (Feb 21, 2026 — 182 likes, 8.8K views). We build it into Seven Shadow System instead.
+Public maintainer demand highlighted a gap in `gh`-style triage workflows. This spec implements that capability directly in Seven Shadow System.
 
 ## What It Does
 Extends the Seven Shadow System guard from "detect and block" to "detect, block, and tell the agent exactly how to fix it." Three new capabilities:
@@ -214,11 +220,11 @@ No new auth mechanism needed.
 - Don't build notification/webhook listeners — this is pull-based CLI
 - Don't touch the existing guard logic — these are parallel commands
 
-## 4. Shadow of Testing — Behavioral Test Quality (`7s test-quality`)
+## 4. Testing Quality Expansion — Behavioral Test Quality (`7s test-quality`)
 
 Inspired by @nnennahacks (Feb 21, 2026) — she made Claude Code produce behavioral tests that read as specifications, removed 11 redundant tests, deleted 293 lines, and MAINTAINED 100% coverage. Fewer, better tests.
 
-This extends the Shadow of Testing from "do tests pass" to "are the tests worth having."
+This extends test quality checks from "do tests pass" to "are the tests meaningful and behavior-focused."
 
 **Input:** `7s test-quality [--path <test-dir>] [--format md|json]`
 
@@ -275,4 +281,4 @@ This usually means padding, not testing.
 - "Removing tests that maintain coverage is an improvement, not a regression."
 
 ## Priority
-Ship `7s comments` first — it's the simplest and highest value. Then `7s failures`. Then `7s lint` (which builds on failures). Then `7s test-quality` (Shadow of Testing upgrade).
+Ship `7s comments` first because it is the simplest high-value feature. Then `7s failures`, then `7s lint` (which builds on failures), then `7s test-quality`.

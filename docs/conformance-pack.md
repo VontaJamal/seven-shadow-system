@@ -2,6 +2,8 @@
 
 Seven Shadow System ships deterministic conformance assets so downstream adapters can prove parity with the canonical runtime.
 
+Use this document to locate fixtures, run conformance checks, and validate provider contract parity.
+
 ## Layout
 
 Core conformance pack:

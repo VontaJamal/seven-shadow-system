@@ -3,6 +3,8 @@
 ## Problem Statement
 Sentinel Eye currently surfaces comments/failures/lint/test-quality but lacks deterministic maintainer triage ranking for high-volume PR streams.
 
+This RFC introduces bounded triage ranking commands without changing existing guard enforcement behavior.
+
 ## Goals
 - Add deterministic `7s patterns`, `7s inbox`, `7s score`, `7s digest` commands.
 - Keep fail-closed behavior under missing auth/scope/malformed upstream payloads.

@@ -2,6 +2,8 @@
 
 Sentinel Eye extends Seven Shadow System with deterministic, agent-readable PR intelligence.
 
+This reference documents command usage, flags, config paths, and compatibility behavior.
+
 ## Commands
 
 ### `7s comments`

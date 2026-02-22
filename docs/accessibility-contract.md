@@ -2,6 +2,8 @@
 
 Accessibility is a release gate for Seven Shadow System output surfaces.
 
+This document defines minimum accessibility expectations for CLI, reports, and governance documentation.
+
 ## Scope
 
 - CLI output and error messages.
