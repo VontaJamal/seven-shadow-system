@@ -4,7 +4,7 @@
 - Why this change is valuable:
 - Risk level (low/medium/high):
 
-## Seven Shadows Checklist
+## Quality Checklist (Seven Shadows)
 
 - [ ] Security: No secrets/tokens added, auth and input boundaries reviewed.
 - [ ] Access: CLI/docs/output changes preserve plain-language and readable structure.

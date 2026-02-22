@@ -2,6 +2,8 @@
 
 This document covers advanced governance controls layered on top of core Seven Shadow scoring.
 
+It is the reference for signed bundles, trust stores, lifecycle operations, replay controls, and rollout safeguards.
+
 ## 1) Signed Policy Bundles (v1 + v2)
 
 Signed bundles make policy distribution tamper-evident.

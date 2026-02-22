@@ -2,6 +2,8 @@
 
 Seven Shadow System release provenance requires ten controls:
 
+This document is the release integrity checklist for signing, attestation, verification, and rollback references.
+
 1. Signed annotated Git tags.
 2. npm publish with provenance (`--provenance`).
 3. GitHub artifact attestations for release tarballs.

@@ -2,6 +2,8 @@
 
 This file stages external reference payloads that should be copied into the separate Armory repository.
 
+Use it as the deterministic handoff log for cross-repo idea synchronization.
+
 ## Sync Rule
 
 - Source repo: `seven-shadow-system`
@@ -47,6 +49,6 @@ Use this JSON payload when creating/updating an Armory entry:
     "BUILD-SPEC-SENTINEL-EYE.md",
     "docs/sentinel-eye.md"
   ],
-  "notes": "Sentinel Eye command family and Shadow of Testing quality gate were derived from public signal and mapped to deterministic CLI surfaces."
+  "notes": "Sentinel Eye command family and behavioral test-quality checks were derived from public signal and mapped to deterministic CLI surfaces."
 }
 ```

@@ -2,6 +2,8 @@
 
 Use this runbook when policy bundle verification starts failing after a trust-store change (rotation/revocation/lifecycle update).
 
+Follow these steps to restore verification safely while keeping evidence for audit review.
+
 ## Goals
 
 1. Restore policy verification quickly using a known-good trust contract.

@@ -2,6 +2,12 @@
 
 Seven Shadow System is governed as an open baseline standard for AI-influenced PR review quality.
 
+## Quick Summary
+
+- Day-to-day maintenance uses lazy consensus.
+- Policy/spec contract changes require council approval.
+- Compatibility guarantees follow semantic versioning boundaries.
+
 ## Governance Model
 
 - Versioned spec with explicit compatibility policy.

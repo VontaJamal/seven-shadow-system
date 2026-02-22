@@ -1,10 +1,16 @@
 # BUILD SPEC: Civilian Mode for Seven Shadow System
 
+## Quick Summary
+
+- Civilian mode changes presentation language, not enforcement behavior.
+- Teams can adopt it through CLI flag, config, or environment variable.
+- The goal is enterprise-friendly wording with identical policy outcomes.
+
 ## Overview
 
-The Seven Shadow System currently uses themed terminology (shadows, gauntlets, doctrine). This works for Sovereign repos and people who appreciate the lore. But for broader adoption — enterprise teams, Fortune 500 repos, people who just want PR quality enforcement — it needs a civilian mode that strips all theming and presents clean, professional output.
+Seven Shadow System includes themed terminology in standard output. Civilian mode provides plain professional wording for teams that want neutral presentation.
 
-The functionality is identical. Only the language changes.
+Functionality remains identical. Only output language changes.
 
 ---
 

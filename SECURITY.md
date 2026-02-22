@@ -2,6 +2,12 @@
 
 Seven Shadow System is a governance control surface, so we treat security issues as high priority.
 
+## Quick Summary
+
+- Report vulnerabilities privately and include reproducible artifacts.
+- Security controls are fail-closed by default.
+- Runtime processing and telemetry boundaries are explicitly constrained.
+
 ## Supported Versions
 
 Only actively maintained minor releases receive fixes. See `ROADMAP.md` for release windows.

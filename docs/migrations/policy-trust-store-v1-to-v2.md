@@ -2,6 +2,8 @@
 
 This guide upgrades trust stores from schema v1 (signer identity only) to schema v2 (signer lifecycle + rotation metadata).
 
+Use this migration when you need signer lifecycle controls and auditable key rotation metadata.
+
 ## Why Migrate
 
 Trust store v2 adds auditable lifecycle controls:

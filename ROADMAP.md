@@ -1,5 +1,11 @@
 # Roadmap
 
+## Quick Summary
+
+- The roadmap moves from foundation hardening to ecosystem and dashboard maturity.
+- Each milestone builds on deterministic governance, provider coverage, and triage UX.
+- `1.0` marks stable contracts and long-term support posture.
+
 ## 0.2 Foundation Hardening
 
 - Policy v2 default contract.

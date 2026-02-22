@@ -1,5 +1,7 @@
 # Site Soul Brief
 
+Quick positioning guide for dashboard UI/UX tone and interaction priorities.
+
 - brand_personality: disciplined, sovereign, maintainers-first
 - audience: maintainers triaging high-volume pull request and notification queues
 - tone: direct, tactical, confidence-building

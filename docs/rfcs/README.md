@@ -2,6 +2,8 @@
 
 Use this directory for behavior or interface changes that impact policy semantics, report schemas, runtime controls, or integration contracts.
 
+RFCs should stay decision-focused and implementation-ready.
+
 ## Minimal RFC Structure
 
 - Problem statement
