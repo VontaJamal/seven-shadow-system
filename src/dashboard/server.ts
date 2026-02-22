@@ -2,9 +2,17 @@ import fs from "node:fs/promises";
 import http from "node:http";
 import path from "node:path";
 
+import {
+  createDefaultSentinelEyeConfig,
+  loadSentinelEyeConfig,
+  parseSentinelEyeConfig,
+  resolveSentinelEyeConfigPath,
+  writeSentinelEyeConfig
+} from "../commands/shared/sentinelEyeConfig";
 import { buildDashboardSnapshot } from "../commands/shared/dashboardSnapshot";
 import type { SentinelProviderName } from "../commands/types";
 import type {
+  SentinelDashboardConfigState,
   SentinelDashboardError,
   SentinelDashboardSnapshot,
   SentinelDashboardStatus
@@ -28,6 +36,7 @@ export interface DashboardServerHandle {
   refreshNow: () => Promise<void>;
   getStatus: () => SentinelDashboardStatus;
   getSnapshot: () => SentinelDashboardSnapshot;
+  getConfig: () => Promise<SentinelDashboardConfigState>;
 }
 
 const RETRYABLE_CODES = new Set([
@@ -36,6 +45,7 @@ const RETRYABLE_CODES = new Set([
   "E_SENTINEL_NOTIFICATIONS_SCOPE_REQUIRED",
   "E_DASHBOARD_AUTH_REQUIRED"
 ]);
+const MAX_CONFIG_BODY_BYTES = 256_000;
 
 function makeError(code: string, message: string): Error {
   return new Error(`${code}: ${message}`);
@@ -61,6 +71,60 @@ function sendJson(response: http.ServerResponse, statusCode: number, payload: un
   response.statusCode = statusCode;
   response.setHeader("Content-Type", "application/json; charset=utf-8");
   response.end(`${JSON.stringify(payload, null, 2)}\n`);
+}
+
+function httpStatusForError(error: SentinelDashboardError): number {
+  if (
+    error.code === "E_SENTINEL_ARG_INVALID" ||
+    error.code === "E_SENTINEL_ARG_REQUIRED" ||
+    error.code === "E_SENTINEL_ARG_UNKNOWN" ||
+    error.code === "E_SENTINEL_CONFIG_INVALID" ||
+    error.code === "E_DASHBOARD_CONFIG_INVALID_JSON"
+  ) {
+    return 400;
+  }
+
+  if (error.code === "E_DASHBOARD_CONFIG_TOO_LARGE") {
+    return 413;
+  }
+
+  if (error.code === "E_DASHBOARD_METHOD_NOT_ALLOWED") {
+    return 405;
+  }
+
+  return 500;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+async function readRequestJson(request: http.IncomingMessage, maxBytes: number): Promise<unknown> {
+  const chunks: Buffer[] = [];
+  let totalBytes = 0;
+
+  for await (const chunk of request) {
+    const buffer = typeof chunk === "string" ? Buffer.from(chunk) : chunk;
+    totalBytes += buffer.byteLength;
+
+    if (totalBytes > maxBytes) {
+      throw makeError("E_DASHBOARD_CONFIG_TOO_LARGE", `request body exceeds ${maxBytes} bytes`);
+    }
+
+    chunks.push(buffer);
+  }
+
+  const raw = Buffer.concat(chunks).toString("utf8").trim();
+  if (raw.length === 0) {
+    throw makeError("E_DASHBOARD_CONFIG_INVALID_JSON", "request body is required");
+  }
+
+  try {
+    return JSON.parse(raw) as unknown;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw makeError("E_DASHBOARD_CONFIG_INVALID_JSON", message.slice(0, 220));
+  }
 }
 
 function contentTypeForPath(filePath: string): string {
@@ -276,6 +340,28 @@ async function readStaticAsset(assetRoot: string, pathname: string): Promise<{ p
     return {
       path: fallbackPath,
       body: fallbackBody
+    };
+  }
+}
+
+async function resolveDashboardConfigState(configPath?: string): Promise<SentinelDashboardConfigState> {
+  try {
+    const loaded = await loadSentinelEyeConfig({ configPath });
+    return {
+      configPath: loaded.configPath,
+      source: loaded.source,
+      config: loaded.config
+    };
+  } catch (error) {
+    const dashboardError = toDashboardError(error);
+    if (dashboardError.code !== "E_SENTINEL_CONFIG_NOT_FOUND") {
+      throw error;
+    }
+
+    return {
+      configPath: resolveSentinelEyeConfigPath({ configPath }),
+      source: "default",
+      config: createDefaultSentinelEyeConfig()
     };
   }
 }
@@ -505,6 +591,12 @@ export async function startDashboardServer(options: StartDashboardServerOptions)
         return;
       }
 
+      if (method === "GET" && pathname === "/api/v1/dashboard/config") {
+        const configState = await resolveDashboardConfigState(options.configPath);
+        sendJson(response, 200, configState);
+        return;
+      }
+
       if (method === "POST" && pathname === "/api/v1/dashboard/refresh") {
         await refreshNow();
         sendJson(response, 200, {
@@ -514,10 +606,27 @@ export async function startDashboardServer(options: StartDashboardServerOptions)
         return;
       }
 
+      if (method === "PUT" && pathname === "/api/v1/dashboard/config") {
+        const parsedBody = await readRequestJson(request, MAX_CONFIG_BODY_BYTES);
+        const rawConfig = isRecord(parsedBody) && "config" in parsedBody ? parsedBody.config : parsedBody;
+        const validated = parseSentinelEyeConfig(rawConfig);
+
+        await writeSentinelEyeConfig({
+          config: validated,
+          configPath: options.configPath
+        });
+
+        await refreshNow();
+
+        const configState = await resolveDashboardConfigState(options.configPath);
+        sendJson(response, 200, configState);
+        return;
+      }
+
       if (method !== "GET") {
         sendJson(response, 405, {
           code: "E_DASHBOARD_METHOD_NOT_ALLOWED",
-          message: "only GET and POST are supported"
+          message: "only GET, POST, and PUT are supported"
         });
         return;
       }
@@ -528,7 +637,7 @@ export async function startDashboardServer(options: StartDashboardServerOptions)
       response.end(asset.body);
     } catch (error) {
       const dashboardError = toDashboardError(error);
-      sendJson(response, 500, dashboardError);
+      sendJson(response, httpStatusForError(dashboardError), dashboardError);
     }
   });
 
@@ -572,6 +681,7 @@ export async function startDashboardServer(options: StartDashboardServerOptions)
     },
     refreshNow,
     getStatus: () => state.status,
-    getSnapshot: () => state.latestSnapshot
+    getSnapshot: () => state.latestSnapshot,
+    getConfig: async () => resolveDashboardConfigState(options.configPath)
   };
 }

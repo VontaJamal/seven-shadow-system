@@ -46,6 +46,8 @@ Sentinel Eye commands (GitHub-first in this phase):
 7s dashboard --repo owner/repo --limit 20
 ```
 
+Use **Settings** in the dashboard to configure shadow controls (Inbox, Patterns, Score, Digest/Execution) and apply them directly to Sentinel config.
+
 Full command reference: `docs/sentinel-eye.md`
 Dashboard reference: `docs/sentinel-eye-dashboard.md`
 

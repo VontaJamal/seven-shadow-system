@@ -5,6 +5,7 @@ import type {
   SentinelProviderName,
   SentinelScoreReport
 } from "../commands/types";
+import type { SentinelEyeConfig } from "../commands/shared/sentinelEyeConfig";
 
 export type SentinelDashboardMode = "civilian" | "sovereign";
 
@@ -54,4 +55,10 @@ export interface SentinelDashboardStatus {
   backoffSeconds: number;
   nextRefreshAt: string | null;
   refreshIntervalSeconds: number;
+}
+
+export interface SentinelDashboardConfigState {
+  configPath: string;
+  source: "default" | "file";
+  config: SentinelEyeConfig;
 }

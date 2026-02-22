@@ -1,4 +1,4 @@
-import type { DashboardSnapshot, DashboardStatus } from "./types";
+import type { DashboardConfigState, DashboardSnapshot, DashboardStatus, SentinelEyeConfig } from "./types";
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   const response = await fetch(url, options);
@@ -29,5 +29,19 @@ export async function requestDashboardRefresh(): Promise<{
     headers: {
       "Content-Type": "application/json"
     }
+  });
+}
+
+export async function getDashboardConfig(): Promise<DashboardConfigState> {
+  return fetchJson<DashboardConfigState>("/api/v1/dashboard/config");
+}
+
+export async function updateDashboardConfig(config: SentinelEyeConfig): Promise<DashboardConfigState> {
+  return fetchJson<DashboardConfigState>("/api/v1/dashboard/config", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ config })
   });
 }

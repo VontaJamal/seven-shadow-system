@@ -86,6 +86,48 @@ describe("App", () => {
       refreshIntervalSeconds: 120
     };
 
+    const config = {
+      configPath: ".seven-shadow/sentinel-eye.json",
+      source: "default",
+      config: {
+        version: 1,
+        inbox: {
+          requireNotificationsScope: true,
+          includeReadByDefault: false
+        },
+        limits: {
+          maxNotifications: 100,
+          maxPullRequests: 50,
+          maxFilesPerPullRequest: 300,
+          maxFailureRunsPerPullRequest: 5,
+          maxLogBytesPerJob: 5000000,
+          maxDigestItems: 20
+        },
+        patterns: {
+          minClusterSize: 2,
+          pathDepth: 2,
+          maxTitleTokens: 6,
+          minTitleTokenLength: 3
+        },
+        scoring: {
+          caps: {
+            failingRuns: 5,
+            unresolvedComments: 20,
+            changedFiles: 250,
+            linesChanged: 6000,
+            duplicatePeers: 20
+          },
+          weights: {
+            failingRuns: 35,
+            unresolvedComments: 30,
+            changedFiles: 15,
+            linesChanged: 10,
+            duplicatePeers: 10
+          }
+        }
+      }
+    };
+
     vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
       const url = String(input);
 
@@ -104,6 +146,20 @@ describe("App", () => {
         });
       }
 
+      if (url.endsWith("/config") && !init?.method) {
+        return new Response(JSON.stringify(config), {
+          status: 200,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
+
+      if (url.endsWith("/config") && init?.method === "PUT") {
+        return new Response(JSON.stringify(config), {
+          status: 200,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
+
       return new Response("not found", { status: 404 });
     });
 
@@ -116,6 +172,12 @@ describe("App", () => {
       expect(screen.getByRole("button", { name: "Inbox" })).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Score" })).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Patterns" })).toBeInTheDocument();
+    });
+
+    screen.getByRole("button", { name: "Open dashboard settings" }).click();
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Shadow Controls" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Apply Shadow Controls" })).toBeInTheDocument();
     });
   });
 });

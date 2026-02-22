@@ -1,5 +1,49 @@
 export type DashboardMode = "civilian" | "sovereign";
 
+export interface SentinelEyeConfig {
+  version: 1;
+  inbox: {
+    requireNotificationsScope: boolean;
+    includeReadByDefault: boolean;
+  };
+  limits: {
+    maxNotifications: number;
+    maxPullRequests: number;
+    maxFilesPerPullRequest: number;
+    maxFailureRunsPerPullRequest: number;
+    maxLogBytesPerJob: number;
+    maxDigestItems: number;
+  };
+  patterns: {
+    minClusterSize: number;
+    pathDepth: number;
+    maxTitleTokens: number;
+    minTitleTokenLength: number;
+  };
+  scoring: {
+    caps: {
+      failingRuns: number;
+      unresolvedComments: number;
+      changedFiles: number;
+      linesChanged: number;
+      duplicatePeers: number;
+    };
+    weights: {
+      failingRuns: number;
+      unresolvedComments: number;
+      changedFiles: number;
+      linesChanged: number;
+      duplicatePeers: number;
+    };
+  };
+}
+
+export interface DashboardConfigState {
+  configPath: string;
+  source: "default" | "file";
+  config: SentinelEyeConfig;
+}
+
 export interface DashboardError {
   code: string;
   message: string;

@@ -116,13 +116,69 @@ export function parseSentinelEyeConfig(raw: unknown): SentinelEyeConfig {
   }
 }
 
+export function buildCanonicalSentinelEyeConfig(config: SentinelEyeConfig): SentinelEyeConfig {
+  return {
+    version: 1,
+    inbox: {
+      requireNotificationsScope: config.inbox.requireNotificationsScope,
+      includeReadByDefault: config.inbox.includeReadByDefault
+    },
+    limits: {
+      maxNotifications: config.limits.maxNotifications,
+      maxPullRequests: config.limits.maxPullRequests,
+      maxFilesPerPullRequest: config.limits.maxFilesPerPullRequest,
+      maxFailureRunsPerPullRequest: config.limits.maxFailureRunsPerPullRequest,
+      maxLogBytesPerJob: config.limits.maxLogBytesPerJob,
+      maxDigestItems: config.limits.maxDigestItems
+    },
+    patterns: {
+      minClusterSize: config.patterns.minClusterSize,
+      pathDepth: config.patterns.pathDepth,
+      maxTitleTokens: config.patterns.maxTitleTokens,
+      minTitleTokenLength: config.patterns.minTitleTokenLength
+    },
+    scoring: {
+      caps: {
+        failingRuns: config.scoring.caps.failingRuns,
+        unresolvedComments: config.scoring.caps.unresolvedComments,
+        changedFiles: config.scoring.caps.changedFiles,
+        linesChanged: config.scoring.caps.linesChanged,
+        duplicatePeers: config.scoring.caps.duplicatePeers
+      },
+      weights: {
+        failingRuns: config.scoring.weights.failingRuns,
+        unresolvedComments: config.scoring.weights.unresolvedComments,
+        changedFiles: config.scoring.weights.changedFiles,
+        linesChanged: config.scoring.weights.linesChanged,
+        duplicatePeers: config.scoring.weights.duplicatePeers
+      }
+    }
+  };
+}
+
+export function createDefaultSentinelEyeConfig(): SentinelEyeConfig {
+  return buildCanonicalSentinelEyeConfig(DEFAULT_SENTINEL_EYE_CONFIG);
+}
+
+export function serializeSentinelEyeConfig(config: SentinelEyeConfig): string {
+  return `${JSON.stringify(buildCanonicalSentinelEyeConfig(config), null, 2)}\n`;
+}
+
+export function resolveSentinelEyeConfigPath(options: {
+  configPath?: string;
+  cwd?: string;
+} = {}): string {
+  const cwd = options.cwd ?? process.cwd();
+  const requestedPath = options.configPath?.trim();
+  return path.resolve(cwd, requestedPath && requestedPath.length > 0 ? requestedPath : DEFAULT_SENTINEL_EYE_CONFIG_PATH);
+}
+
 export async function loadSentinelEyeConfig(options: {
   configPath?: string;
   cwd?: string;
 } = {}): Promise<ResolvedSentinelEyeConfig> {
-  const cwd = options.cwd ?? process.cwd();
   const requestedPath = options.configPath?.trim();
-  const resolvedPath = path.resolve(cwd, requestedPath && requestedPath.length > 0 ? requestedPath : DEFAULT_SENTINEL_EYE_CONFIG_PATH);
+  const resolvedPath = resolveSentinelEyeConfigPath(options);
 
   let raw: string;
   try {
@@ -135,7 +191,7 @@ export async function loadSentinelEyeConfig(options: {
       }
 
       return {
-        config: DEFAULT_SENTINEL_EYE_CONFIG,
+        config: createDefaultSentinelEyeConfig(),
         configPath: resolvedPath,
         source: "default"
       };
@@ -154,8 +210,32 @@ export async function loadSentinelEyeConfig(options: {
   }
 
   return {
-    config: parseSentinelEyeConfig(parsed),
+    config: buildCanonicalSentinelEyeConfig(parseSentinelEyeConfig(parsed)),
     configPath: resolvedPath,
     source: "file"
   };
+}
+
+export async function writeSentinelEyeConfig(options: {
+  config: SentinelEyeConfig;
+  configPath?: string;
+  cwd?: string;
+}): Promise<string> {
+  const resolvedPath = resolveSentinelEyeConfigPath({
+    configPath: options.configPath,
+    cwd: options.cwd
+  });
+
+  const validated = parseSentinelEyeConfig(options.config);
+  const serialized = serializeSentinelEyeConfig(validated);
+
+  try {
+    await fs.mkdir(path.dirname(resolvedPath), { recursive: true });
+    await fs.writeFile(resolvedPath, serialized, "utf8");
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw makeError("E_SENTINEL_CONFIG_WRITE", message.slice(0, 220));
+  }
+
+  return resolvedPath;
 }
