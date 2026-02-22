@@ -43,9 +43,11 @@ Sentinel Eye commands (GitHub-first in this phase):
 7s inbox --repo owner/repo --limit 20 --format md
 7s score --repo owner/repo --format md
 7s digest --repo owner/repo --limit 20 --format md
+7s dashboard --repo owner/repo --limit 20
 ```
 
 Full command reference: `docs/sentinel-eye.md`
+Dashboard reference: `docs/sentinel-eye-dashboard.md`
 
 Sentinel Eye config (optional):
 
@@ -70,6 +72,12 @@ Each run ends with one result:
 
 If your policy requires human approvals (`minHumanApprovals > 0`), the guard needs `GITHUB_TOKEN`.
 Without it, the run blocks by design.
+
+Dashboard auth fallback order (GitHub):
+
+1. `GITHUB_TOKEN` env var
+2. `gh auth token`
+3. interactive `gh auth login --web` flow
 
 ## Use It as a Submodule
 
@@ -121,6 +129,7 @@ You can:
 - Engine: `src/sevenShadowSystem.ts`
 - CLI dispatcher: `src/cli.ts`
 - Sentinel command family (`comments`, `failures`, `lint`, `test-quality`, `patterns`, `inbox`, `score`, `digest`): `src/commands/`
+- Dashboard server + GUI assets: `src/commands/dashboard.ts`, `src/dashboard/`, `apps/dashboard/`
 - Log parsers: `src/parsers/`
 - Tests: `test/sevenShadowSystem.test.ts`
 - Submodule installer: `scripts/wire-submodule.sh`

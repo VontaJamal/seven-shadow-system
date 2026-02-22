@@ -193,3 +193,30 @@ jobs:
 
       - name: Run accessibility snapshot gate
         run: npm run test:accessibility
+
+  dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+
+      - name: Setup Node
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install
+        run: npm ci
+
+      - name: Build dashboard assets
+        run: npm run dashboard:build
+
+      - name: Run dashboard unit/integration tests
+        run: npm run dashboard:test
+
+      - name: Install Playwright browser dependencies
+        run: npx playwright install --with-deps chromium
+
+      - name: Run dashboard browser smoke test
+        run: npm run dashboard:test:e2e

@@ -1,4 +1,5 @@
 import { runCommentsCommand } from "./commands/comments";
+import { runDashboardCommand } from "./commands/dashboard";
 import { runDigestCommand } from "./commands/digest";
 import { runFailuresCommand } from "./commands/failures";
 import { runInboxCommand } from "./commands/inbox";
@@ -22,6 +23,7 @@ function renderHelp(): string {
     "  7s inbox [--repo owner/repo] [--provider github|gitlab|bitbucket] [--limit N] [--all] [--format md|json] [--config path]",
     "  7s score [--pr N] [--repo owner/repo] [--provider github|gitlab|bitbucket] [--limit N] [--format md|json] [--config path]",
     "  7s digest [--repo owner/repo] [--provider github|gitlab|bitbucket] [--limit N] [--all] [--format md|json] [--config path]",
+    "  7s dashboard [--repo owner/repo] [--provider github|gitlab|bitbucket] [--limit N] [--config path] [--host 127.0.0.1|0.0.0.0] [--port N] [--refresh-sec N] [--open] [--no-open]",
     "",
     "Backward compatibility:",
     "  seven-shadow-system --policy ... (implicit guard mode)",
@@ -93,23 +95,28 @@ export async function runCli(
     return runDigestCommand(rest, env);
   }
 
+  if (command === "dashboard") {
+    return runDashboardCommand(rest, env);
+  }
+
   throw new Error(`E_UNKNOWN_COMMAND: '${command}'. Use --help to view supported commands.`);
 }
 
 if (require.main === module) {
   runCli()
     .then((code) => {
-      process.exit(code);
+      process.exitCode = code;
     })
     .catch((error: unknown) => {
       const message = error instanceof Error ? error.message : String(error);
 
       if (message.startsWith("E_SENTINEL_HELP:")) {
         process.stdout.write(`${message.replace(/^E_SENTINEL_HELP:\s*/, "")}\n`);
-        process.exit(0);
+        process.exitCode = 0;
+        return;
       }
 
       process.stderr.write(`Seven Shadow System CLI failed: ${message}\n`);
-      process.exit(1);
+      process.exitCode = 1;
     });
 }

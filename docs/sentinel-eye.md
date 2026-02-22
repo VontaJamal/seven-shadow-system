@@ -143,6 +143,33 @@ Flags:
 - `--format md|json`: output format (default: `md`)
 - `--config <path>`: optional path to Sentinel Eye config
 
+### `7s dashboard`
+
+Run a local maintainer dashboard GUI backed by deterministic Sentinel Eye data.
+
+```bash
+7s dashboard --repo owner/repo --limit 20
+```
+
+Flags:
+
+- `--repo <owner/repo>`: repository slug (optional)
+- `--provider github|gitlab|bitbucket`: provider name (default: `github`)
+- `--limit <n>`: max ranked items per section (default: `20`)
+- `--config <path>`: optional path to Sentinel Eye config
+- `--host 127.0.0.1|0.0.0.0`: bind host (default: `127.0.0.1`)
+- `--port <n>`: bind port (default: `7777`)
+- `--refresh-sec <n>`: base auto-refresh interval in seconds (default: `120`)
+- `--open`: force browser auto-open even outside interactive mode
+- `--no-open`: disable browser auto-open
+
+Runtime API endpoints exposed by the dashboard server:
+
+- `GET /healthz`
+- `GET /api/v1/dashboard/status`
+- `GET /api/v1/dashboard/snapshot`
+- `POST /api/v1/dashboard/refresh`
+
 ## Sentinel Eye Config
 
 Default config path:
@@ -173,6 +200,12 @@ Sentinel commands reuse existing provider token conventions:
 - `GITLAB_TOKEN` for GitLab
 - `BITBUCKET_TOKEN` for Bitbucket
 
+Dashboard GitHub auth resolution order:
+
+1. `GITHUB_TOKEN`
+2. `gh auth token`
+3. interactive `gh auth login --web --hostname github.com --scopes repo,read:org,notifications`
+
 `7s inbox` fails closed by default if notification scope is missing.
 
 ## Compatibility
@@ -186,3 +219,4 @@ Script aliases are additive:
 
 - existing `sentinel:*` npm scripts remain supported
 - new `eye:*` aliases mirror Sentinel commands
+- `sentinel:dashboard` / `eye:dashboard` launch the GUI after asset build
