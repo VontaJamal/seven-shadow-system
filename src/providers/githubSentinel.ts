@@ -6,6 +6,12 @@ import type {
   SentinelFailureStep,
   SentinelGetJobLogsRequest,
   SentinelListFailureRunsRequest,
+  SentinelListNotificationsRequest,
+  SentinelListOpenPullRequestsRequest,
+  SentinelListPullRequestFilesRequest,
+  SentinelNotification,
+  SentinelPullRequestFile,
+  SentinelPullRequestSummary,
   SentinelProviderAdapter,
   SentinelRepositoryRef,
   SentinelResolvePullRequestOptions,
@@ -58,10 +64,53 @@ interface GraphqlReviewThreadsResponse {
 
 interface GitHubPullSummary {
   number?: unknown;
+  title?: unknown;
+  state?: unknown;
+  draft?: unknown;
+  user?: {
+    login?: unknown;
+  };
+  additions?: unknown;
+  deletions?: unknown;
+  changed_files?: unknown;
+  comments?: unknown;
+  review_comments?: unknown;
+  commits?: unknown;
+  created_at?: unknown;
+  updated_at?: unknown;
+  html_url?: unknown;
   head?: {
     ref?: unknown;
     sha?: unknown;
   };
+}
+
+interface GitHubPullRequestFileSummary {
+  filename?: unknown;
+  status?: unknown;
+  additions?: unknown;
+  deletions?: unknown;
+  changes?: unknown;
+}
+
+interface GitHubNotificationSubject {
+  title?: unknown;
+  type?: unknown;
+  url?: unknown;
+}
+
+interface GitHubNotificationRepository {
+  full_name?: unknown;
+}
+
+interface GitHubNotificationSummary {
+  id?: unknown;
+  reason?: unknown;
+  unread?: unknown;
+  updated_at?: unknown;
+  subject?: GitHubNotificationSubject;
+  repository?: GitHubNotificationRepository;
+  url?: unknown;
 }
 
 interface GitHubWorkflowRunSummary {
@@ -121,6 +170,73 @@ function asPositiveInt(value: unknown): number | null {
   }
 
   return value;
+}
+
+function asNonNegativeInt(value: unknown): number | null {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+    return null;
+  }
+
+  return value;
+}
+
+function asBoolean(value: unknown): boolean | null {
+  if (typeof value !== "boolean") {
+    return null;
+  }
+
+  return value;
+}
+
+function asIsoTimestamp(value: unknown): string | null {
+  const raw = asNonEmptyString(value);
+  if (!raw) {
+    return null;
+  }
+
+  const parsed = Date.parse(raw);
+  if (Number.isNaN(parsed)) {
+    return null;
+  }
+
+  return new Date(parsed).toISOString();
+}
+
+function parseRepoFullName(fullName: string): SentinelRepositoryRef | null {
+  const trimmed = fullName.trim();
+  const segments = trimmed.split("/").filter((item) => item.length > 0);
+  if (segments.length < 2) {
+    return null;
+  }
+
+  const owner = segments.slice(0, segments.length - 1).join("/");
+  const repo = segments[segments.length - 1] ?? "";
+  if (!owner || !repo) {
+    return null;
+  }
+
+  return {
+    owner,
+    repo
+  };
+}
+
+function parsePullNumberFromApiUrl(url: string | null): number | null {
+  if (!url) {
+    return null;
+  }
+
+  const match = url.match(/\/pulls\/(\d+)(?:\/|$)/);
+  if (!match?.[1]) {
+    return null;
+  }
+
+  const parsed = Number.parseInt(match[1], 10);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    return null;
+  }
+
+  return parsed;
 }
 
 function ensureFailureConclusion(value: unknown): string {
@@ -314,6 +430,62 @@ async function fetchPullHeadSha(repo: SentinelRepositoryRef, prNumber: number, t
   }
 
   return headSha;
+}
+
+function toPullRequestSummary(raw: GitHubPullSummary): SentinelPullRequestSummary | null {
+  const number = asPositiveInt(raw.number);
+  const title = asNonEmptyString(raw.title);
+  const state = asNonEmptyString(raw.state);
+  const draft = asBoolean(raw.draft);
+  const author = asNonEmptyString(raw.user?.login) ?? "unknown";
+  const createdAt = asIsoTimestamp(raw.created_at);
+  const updatedAt = asIsoTimestamp(raw.updated_at);
+  const htmlUrl = asNonEmptyString(raw.html_url);
+  const headSha = asNonEmptyString(raw.head?.sha);
+
+  const additions = asNonNegativeInt(raw.additions);
+  const deletions = asNonNegativeInt(raw.deletions);
+  const changedFiles = asNonNegativeInt(raw.changed_files);
+  const comments = asNonNegativeInt(raw.comments);
+  const reviewComments = asNonNegativeInt(raw.review_comments);
+  const commits = asNonNegativeInt(raw.commits);
+
+  if (
+    !number ||
+    !title ||
+    !state ||
+    draft === null ||
+    additions === null ||
+    deletions === null ||
+    changedFiles === null ||
+    comments === null ||
+    reviewComments === null ||
+    commits === null ||
+    !createdAt ||
+    !updatedAt ||
+    !htmlUrl ||
+    !headSha
+  ) {
+    return null;
+  }
+
+  return {
+    number,
+    title,
+    state,
+    draft,
+    author,
+    additions,
+    deletions,
+    changedFiles,
+    comments,
+    reviewComments,
+    commits,
+    createdAt,
+    updatedAt,
+    htmlUrl,
+    headSha
+  };
 }
 
 function decodeLogArchive(buffer: Uint8Array): string {
@@ -557,6 +729,236 @@ async function listFailureRuns(
   return runs;
 }
 
+async function listNotifications(
+  request: SentinelListNotificationsRequest,
+  options: SentinelResolvePullRequestOptions
+): Promise<SentinelNotification[]> {
+  const maxItems = Math.max(1, request.maxItems);
+  const perPage = 50;
+  const maxPages = Math.max(1, Math.ceil(maxItems / perPage));
+  const notifications: SentinelNotification[] = [];
+
+  for (let page = 1; page <= maxPages; page += 1) {
+    const url = new URL("https://api.github.com/notifications");
+    url.searchParams.set("per_page", String(perPage));
+    url.searchParams.set("page", String(page));
+    url.searchParams.set("all", request.includeRead ? "true" : "false");
+    url.searchParams.set("participating", "false");
+
+    const response = await fetch(url.toString(), {
+      headers: headersForGitHub(options.authToken)
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      if (response.status === 401 || response.status === 403) {
+        throw new Error(
+          `E_SENTINEL_NOTIFICATIONS_SCOPE_REQUIRED: status=${response.status} ensure token grants notifications read access`
+        );
+      }
+      throwApiError(response.status, url.toString(), body);
+    }
+
+    const payload = (await response.json()) as GitHubNotificationSummary[];
+    const batch = Array.isArray(payload) ? payload : [];
+    if (batch.length === 0) {
+      break;
+    }
+
+    for (const item of batch) {
+      const repoFullName = asNonEmptyString(item.repository?.full_name);
+      if (!repoFullName) {
+        continue;
+      }
+
+      const repository = parseRepoFullName(repoFullName);
+      if (!repository) {
+        continue;
+      }
+
+      if (request.repo && (repository.owner !== request.repo.owner || repository.repo !== request.repo.repo)) {
+        continue;
+      }
+
+      const id = asNonEmptyString(item.id);
+      const reason = asNonEmptyString(item.reason) ?? "unknown";
+      const unread = asBoolean(item.unread) ?? false;
+      const updatedAt = asIsoTimestamp(item.updated_at) ?? new Date(0).toISOString();
+      const subjectType = asNonEmptyString(item.subject?.type) ?? "unknown";
+      const title = asNonEmptyString(item.subject?.title) ?? "(untitled)";
+      const apiUrl = asNonEmptyString(item.subject?.url);
+      const pullNumber = parsePullNumberFromApiUrl(apiUrl);
+
+      if (!id) {
+        continue;
+      }
+
+      notifications.push({
+        id,
+        reason,
+        unread,
+        updatedAt,
+        repository,
+        subjectType,
+        title,
+        pullNumber,
+        apiUrl,
+        webUrl: null
+      });
+
+      if (notifications.length >= maxItems) {
+        break;
+      }
+    }
+
+    if (notifications.length >= maxItems) {
+      break;
+    }
+  }
+
+  notifications.sort((left, right) => {
+    const updatedCompare = right.updatedAt.localeCompare(left.updatedAt);
+    if (updatedCompare !== 0) {
+      return updatedCompare;
+    }
+
+    const repoCompare = `${left.repository.owner}/${left.repository.repo}`.localeCompare(
+      `${right.repository.owner}/${right.repository.repo}`
+    );
+    if (repoCompare !== 0) {
+      return repoCompare;
+    }
+
+    return left.id.localeCompare(right.id);
+  });
+
+  return notifications;
+}
+
+async function listOpenPullRequests(
+  repo: SentinelRepositoryRef,
+  request: SentinelListOpenPullRequestsRequest,
+  options: SentinelResolvePullRequestOptions
+): Promise<SentinelPullRequestSummary[]> {
+  const maxPullRequests = Math.max(1, request.maxPullRequests);
+  const perPage = 100;
+  const maxPages = Math.max(1, Math.ceil(maxPullRequests / perPage));
+  const results: SentinelPullRequestSummary[] = [];
+
+  for (let page = 1; page <= maxPages; page += 1) {
+    const url = new URL(`https://api.github.com/repos/${repo.owner}/${repo.repo}/pulls`);
+    url.searchParams.set("state", "open");
+    url.searchParams.set("sort", "updated");
+    url.searchParams.set("direction", "desc");
+    url.searchParams.set("per_page", String(perPage));
+    url.searchParams.set("page", String(page));
+
+    const payload = await githubRestJson<GitHubPullSummary[]>(url.toString(), options.authToken);
+    const pulls = Array.isArray(payload) ? payload : [];
+    if (pulls.length === 0) {
+      break;
+    }
+
+    for (const pull of pulls) {
+      const normalized = toPullRequestSummary(pull);
+      if (!normalized) {
+        continue;
+      }
+
+      results.push(normalized);
+      if (results.length >= maxPullRequests) {
+        break;
+      }
+    }
+
+    if (results.length >= maxPullRequests) {
+      break;
+    }
+  }
+
+  return results;
+}
+
+async function getPullRequestSummary(
+  repo: SentinelRepositoryRef,
+  prNumber: number,
+  options: SentinelResolvePullRequestOptions
+): Promise<SentinelPullRequestSummary> {
+  const pullUrl = `https://api.github.com/repos/${repo.owner}/${repo.repo}/pulls/${prNumber}`;
+  const pull = await githubRestJson<GitHubPullSummary>(pullUrl, options.authToken);
+  const normalized = toPullRequestSummary(pull);
+  if (!normalized) {
+    throw new Error(`E_SENTINEL_API_ERROR: missing pull request summary fields for PR ${prNumber}`);
+  }
+
+  return normalized;
+}
+
+async function listPullRequestFiles(
+  repo: SentinelRepositoryRef,
+  prNumber: number,
+  request: SentinelListPullRequestFilesRequest,
+  options: SentinelResolvePullRequestOptions
+): Promise<SentinelPullRequestFile[]> {
+  const maxFiles = Math.max(1, request.maxFiles);
+  const perPage = 100;
+  const maxPages = Math.max(1, Math.ceil(maxFiles / perPage));
+  const files: SentinelPullRequestFile[] = [];
+
+  for (let page = 1; page <= maxPages; page += 1) {
+    const url = new URL(`https://api.github.com/repos/${repo.owner}/${repo.repo}/pulls/${prNumber}/files`);
+    url.searchParams.set("per_page", String(perPage));
+    url.searchParams.set("page", String(page));
+
+    const payload = await githubRestJson<GitHubPullRequestFileSummary[]>(url.toString(), options.authToken);
+    const batch = Array.isArray(payload) ? payload : [];
+    if (batch.length === 0) {
+      break;
+    }
+
+    for (const item of batch) {
+      const pathValue = asNonEmptyString(item.filename);
+      if (!pathValue) {
+        continue;
+      }
+
+      const additions = asNonNegativeInt(item.additions);
+      const deletions = asNonNegativeInt(item.deletions);
+      const changes = asNonNegativeInt(item.changes);
+      if (additions === null || deletions === null || changes === null) {
+        continue;
+      }
+
+      files.push({
+        path: pathValue,
+        status: asNonEmptyString(item.status) ?? "unknown",
+        additions,
+        deletions,
+        changes
+      });
+
+      if (files.length >= maxFiles) {
+        break;
+      }
+    }
+
+    if (files.length >= maxFiles) {
+      break;
+    }
+  }
+
+  files.sort((left, right) => {
+    const pathCompare = left.path.localeCompare(right.path);
+    if (pathCompare !== 0) {
+      return pathCompare;
+    }
+
+    return left.status.localeCompare(right.status);
+  });
+
+  return files;
+}
+
 async function getJobLogs(request: SentinelGetJobLogsRequest): Promise<string> {
   const url = `https://api.github.com/repos/${request.repo.owner}/${request.repo.repo}/actions/jobs/${request.jobId}/logs`;
   const bytes = await githubRestBinary(url, request.authToken);
@@ -579,5 +981,9 @@ export const githubSentinelAdapter: SentinelProviderAdapter = {
   resolveOpenPullRequestForBranch,
   listUnresolvedComments,
   listFailureRuns,
+  listNotifications,
+  listOpenPullRequests,
+  getPullRequestSummary,
+  listPullRequestFiles,
   getJobLogs
 };

@@ -54,6 +54,45 @@ export interface SentinelResolvePullRequestOptions {
   authToken: string;
 }
 
+export interface SentinelNotification {
+  id: string;
+  reason: string;
+  unread: boolean;
+  updatedAt: string;
+  repository: SentinelRepositoryRef;
+  subjectType: string;
+  title: string;
+  pullNumber: number | null;
+  apiUrl: string | null;
+  webUrl: string | null;
+}
+
+export interface SentinelPullRequestSummary {
+  number: number;
+  title: string;
+  state: string;
+  draft: boolean;
+  author: string;
+  additions: number;
+  deletions: number;
+  changedFiles: number;
+  comments: number;
+  reviewComments: number;
+  commits: number;
+  createdAt: string;
+  updatedAt: string;
+  htmlUrl: string;
+  headSha: string;
+}
+
+export interface SentinelPullRequestFile {
+  path: string;
+  status: string;
+  additions: number;
+  deletions: number;
+  changes: number;
+}
+
 export interface SentinelUnresolvedComment {
   file: string;
   line: number;
@@ -98,6 +137,20 @@ export interface SentinelListFailureRunsRequest {
   maxRuns: number;
 }
 
+export interface SentinelListNotificationsRequest {
+  repo?: SentinelRepositoryRef;
+  maxItems: number;
+  includeRead: boolean;
+}
+
+export interface SentinelListOpenPullRequestsRequest {
+  maxPullRequests: number;
+}
+
+export interface SentinelListPullRequestFilesRequest {
+  maxFiles: number;
+}
+
 export interface SentinelGetJobLogsRequest {
   repo: SentinelRepositoryRef;
   jobId: number;
@@ -121,6 +174,26 @@ export interface SentinelProviderAdapter {
     request: SentinelListFailureRunsRequest,
     options: SentinelResolvePullRequestOptions
   ) => Promise<SentinelFailureRun[]>;
+  listNotifications: (
+    request: SentinelListNotificationsRequest,
+    options: SentinelResolvePullRequestOptions
+  ) => Promise<SentinelNotification[]>;
+  listOpenPullRequests: (
+    repo: SentinelRepositoryRef,
+    request: SentinelListOpenPullRequestsRequest,
+    options: SentinelResolvePullRequestOptions
+  ) => Promise<SentinelPullRequestSummary[]>;
+  getPullRequestSummary: (
+    repo: SentinelRepositoryRef,
+    prNumber: number,
+    options: SentinelResolvePullRequestOptions
+  ) => Promise<SentinelPullRequestSummary>;
+  listPullRequestFiles: (
+    repo: SentinelRepositoryRef,
+    prNumber: number,
+    request: SentinelListPullRequestFilesRequest,
+    options: SentinelResolvePullRequestOptions
+  ) => Promise<SentinelPullRequestFile[]>;
   getJobLogs: (request: SentinelGetJobLogsRequest) => Promise<string>;
 }
 

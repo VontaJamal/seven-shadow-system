@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rinshari.dev/schemas/sentinel-eye-v1.schema.json",
+  "title": "Sentinel Eye Config v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "inbox", "limits", "patterns", "scoring"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1
+    },
+    "inbox": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requireNotificationsScope", "includeReadByDefault"],
+      "properties": {
+        "requireNotificationsScope": {
+          "type": "boolean"
+        },
+        "includeReadByDefault": {
+          "type": "boolean"
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxNotifications",
+        "maxPullRequests",
+        "maxFilesPerPullRequest",
+        "maxFailureRunsPerPullRequest",
+        "maxLogBytesPerJob",
+        "maxDigestItems"
+      ],
+      "properties": {
+        "maxNotifications": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500
+        },
+        "maxPullRequests": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500
+        },
+        "maxFilesPerPullRequest": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2000
+        },
+        "maxFailureRunsPerPullRequest": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "maxLogBytesPerJob": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 20000000
+        },
+        "maxDigestItems": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      }
+    },
+    "patterns": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minClusterSize", "pathDepth", "maxTitleTokens", "minTitleTokenLength"],
+      "properties": {
+        "minClusterSize": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 50
+        },
+        "pathDepth": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6
+        },
+        "maxTitleTokens": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "minTitleTokenLength": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        }
+      }
+    },
+    "scoring": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["caps", "weights"],
+      "properties": {
+        "caps": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["failingRuns", "unresolvedComments", "changedFiles", "linesChanged", "duplicatePeers"],
+          "properties": {
+            "failingRuns": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "unresolvedComments": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            },
+            "changedFiles": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 5000
+            },
+            "linesChanged": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200000
+            },
+            "duplicatePeers": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          }
+        },
+        "weights": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["failingRuns", "unresolvedComments", "changedFiles", "linesChanged", "duplicatePeers"],
+          "properties": {
+            "failingRuns": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "unresolvedComments": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "changedFiles": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "linesChanged": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "duplicatePeers": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        }
+      }
+    }
+  }
+}

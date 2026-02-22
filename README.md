@@ -39,9 +39,21 @@ Sentinel Eye commands (GitHub-first in this phase):
 7s failures --pr 123 --repo owner/repo --format md
 7s lint --pr 123 --repo owner/repo --format json
 7s test-quality --path test --format md
+7s patterns --repo owner/repo --limit 20 --format md
+7s inbox --repo owner/repo --limit 20 --format md
+7s score --repo owner/repo --format md
+7s digest --repo owner/repo --limit 20 --format md
+7s dashboard --repo owner/repo --limit 20
 ```
 
 Full command reference: `docs/sentinel-eye.md`
+Dashboard reference: `docs/sentinel-eye-dashboard.md`
+
+Sentinel Eye config (optional):
+
+- default path: `.seven-shadow/sentinel-eye.json`
+- schema: `schemas/sentinel-eye-v1.schema.json`
+- sample: `config/sentinel-eye.sample.json`
 
 ## What Decision You Get
 
@@ -60,6 +72,12 @@ Each run ends with one result:
 
 If your policy requires human approvals (`minHumanApprovals > 0`), the guard needs `GITHUB_TOKEN`.
 Without it, the run blocks by design.
+
+Dashboard auth fallback order (GitHub):
+
+1. `GITHUB_TOKEN` env var
+2. `gh auth token`
+3. interactive `gh auth login --web` flow
 
 ## Use It as a Submodule
 
@@ -110,7 +128,8 @@ You can:
 
 - Engine: `src/sevenShadowSystem.ts`
 - CLI dispatcher: `src/cli.ts`
-- Sentinel commands: `src/commands/`
+- Sentinel command family (`comments`, `failures`, `lint`, `test-quality`, `patterns`, `inbox`, `score`, `digest`): `src/commands/`
+- Dashboard server + GUI assets: `src/commands/dashboard.ts`, `src/dashboard/`, `apps/dashboard/`
 - Log parsers: `src/parsers/`
 - Tests: `test/sevenShadowSystem.test.ts`
 - Submodule installer: `scripts/wire-submodule.sh`
@@ -133,4 +152,3 @@ You can:
 [Explore the Vault →](https://github.com/VontaJamal/shadow-vault)
 
 🏴‍☠️ [Sovereign](https://github.com/VontaJamal) — The Shadow Dominion.
-

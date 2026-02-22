@@ -2,6 +2,77 @@
 
 All notable changes to Seven Shadow System are documented in this file.
 
+## 0.3.0-rc.6 - 2026-02-22
+
+### Added
+
+- Stable `7s dashboard` GUI command for local maintainer triage operations.
+- Dashboard HTTP interface:
+  - `GET /healthz`
+  - `GET /api/v1/dashboard/status`
+  - `GET /api/v1/dashboard/snapshot`
+  - `POST /api/v1/dashboard/refresh`
+- Civilian-first mode system with settings-only mode switching:
+  - `civilian` (default)
+  - `sovereign`
+- Separate dashboard workspace at `apps/dashboard` using React + Vite + TypeScript.
+- Dashboard backend/server modules:
+  - `src/commands/dashboard.ts`
+  - `src/commands/shared/dashboardAuth.ts`
+  - `src/commands/shared/dashboardSnapshot.ts`
+  - `src/dashboard/server.ts`
+  - `src/dashboard/types.ts`
+- Dashboard script aliases:
+  - `sentinel:dashboard`
+  - `eye:dashboard`
+  - `dashboard:build`
+  - `dashboard:test`
+  - `dashboard:test:e2e`
+- Dashboard docs:
+  - `docs/sentinel-eye-dashboard.md`
+- Dashboard command/unit/server tests plus GUI unit/e2e smoke tests.
+
+### Changed
+
+- Root package now includes `apps/dashboard` workspace wiring.
+- Package publish files include prebuilt dashboard assets in `dist/dashboard/`.
+- CLI dispatch help and command router now include `dashboard`.
+- CLI main entrypoint now uses `process.exitCode` so long-running command surfaces (like dashboard server mode) remain alive.
+- Site soul brief is now populated for the maintainer dashboard visual direction.
+- CI now includes dashboard build/test/e2e coverage in a dedicated job.
+
+## 0.3.0-rc.5 - 2026-02-22
+
+### Added
+
+- Sentinel Eye triage command family:
+  - `7s patterns`
+  - `7s inbox`
+  - `7s score`
+  - `7s digest`
+- Sentinel Eye deterministic config contract:
+  - default path `.seven-shadow/sentinel-eye.json`
+  - schema `schemas/sentinel-eye-v1.schema.json`
+  - sample `config/sentinel-eye.sample.json`
+- Shared triage engine for deterministic ranking and pattern clustering (`src/commands/shared/triageEngine.ts`).
+- GitHub Sentinel adapter support for:
+  - notification listing
+  - open PR listing
+  - PR summary retrieval
+  - PR file listing
+- Additive npm script aliases:
+  - `sentinel:patterns`, `sentinel:inbox`, `sentinel:score`, `sentinel:digest`
+  - `eye:*` aliases mirroring Sentinel command scripts
+- Naming guard test to prevent legacy doctrine-name regressions in parent repo files.
+- RFC for triage suite expansion (`docs/rfcs/0001-sentinel-eye-triage-suite.md`).
+
+### Changed
+
+- Design-system submodule reference renamed from legacy path to `design/rinshari-eye`.
+- Canonical doctrine link updated to `https://github.com/VontaJamal/rinshari-eye`.
+- Sentinel Eye docs and README command references expanded for maintainer triage workflows.
+- Sentinel output snapshot coverage extended to include patterns/inbox/score/digest markdown surfaces.
+
 ## 0.3.0-rc.4 - 2026-02-21
 
 ### Added

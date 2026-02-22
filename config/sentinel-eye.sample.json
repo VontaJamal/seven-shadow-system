@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "inbox": {
+    "requireNotificationsScope": true,
+    "includeReadByDefault": false
+  },
+  "limits": {
+    "maxNotifications": 100,
+    "maxPullRequests": 50,
+    "maxFilesPerPullRequest": 300,
+    "maxFailureRunsPerPullRequest": 5,
+    "maxLogBytesPerJob": 5000000,
+    "maxDigestItems": 20
+  },
+  "patterns": {
+    "minClusterSize": 2,
+    "pathDepth": 2,
+    "maxTitleTokens": 6,
+    "minTitleTokenLength": 3
+  },
+  "scoring": {
+    "caps": {
+      "failingRuns": 5,
+      "unresolvedComments": 20,
+      "changedFiles": 250,
+      "linesChanged": 6000,
+      "duplicatePeers": 20
+    },
+    "weights": {
+      "failingRuns": 35,
+      "unresolvedComments": 30,
+      "changedFiles": 15,
+      "linesChanged": 10,
+      "duplicatePeers": 10
+    }
+  }
+}

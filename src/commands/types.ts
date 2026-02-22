@@ -92,3 +92,97 @@ export interface LintReport {
   runId: number | null;
   findings: LintFinding[];
 }
+
+export interface SentinelScoreBreakdown {
+  failingRuns: number;
+  unresolvedComments: number;
+  changedFiles: number;
+  linesChanged: number;
+  duplicatePeers: number;
+}
+
+export interface SentinelScoredNotificationMeta {
+  id: string;
+  reason: string;
+  unread: boolean;
+  updatedAt: string;
+}
+
+export interface SentinelScoredPullRequest {
+  repo: string;
+  prNumber: number;
+  title: string;
+  htmlUrl: string;
+  state: string;
+  draft: boolean;
+  author: string;
+  createdAt: string;
+  updatedAt: string;
+  changedFiles: number;
+  additions: number;
+  deletions: number;
+  linesChanged: number;
+  unresolvedComments: number;
+  failingRuns: number;
+  duplicatePeers: number;
+  pathAreas: string[];
+  titleFingerprint: string;
+  failureSignatures: string[];
+  riskPoints: number;
+  priorityScore: number;
+  trustScore: number;
+  breakdown: SentinelScoreBreakdown;
+  notification: SentinelScoredNotificationMeta | null;
+}
+
+export interface SentinelPatternClusterPullRequest {
+  repo: string;
+  prNumber: number;
+  title: string;
+  htmlUrl: string;
+  priorityScore: number;
+}
+
+export interface SentinelPatternCluster {
+  type: "path-area" | "title-fingerprint" | "failure-signature";
+  key: string;
+  size: number;
+  pullRequests: SentinelPatternClusterPullRequest[];
+}
+
+export interface SentinelScoreReport {
+  repo: string;
+  generatedAt: string;
+  configPath: string;
+  totalPullRequests: number;
+  items: SentinelScoredPullRequest[];
+}
+
+export interface SentinelPatternsReport {
+  repo: string;
+  generatedAt: string;
+  configPath: string;
+  totalPullRequests: number;
+  clusters: SentinelPatternCluster[];
+}
+
+export interface SentinelInboxReport {
+  repo: string;
+  generatedAt: string;
+  configPath: string;
+  totalNotifications: number;
+  notificationsConsidered: number;
+  skippedNonPullRequest: number;
+  items: SentinelScoredPullRequest[];
+}
+
+export interface SentinelDigestReport {
+  repo: string;
+  generatedAt: string;
+  configPath: string;
+  totalNotifications: number;
+  notificationsConsidered: number;
+  skippedNonPullRequest: number;
+  topPriorities: SentinelScoredPullRequest[];
+  topPatterns: SentinelPatternCluster[];
+}

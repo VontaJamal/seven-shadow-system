@@ -5,6 +5,7 @@ export {
   runSevenShadowSystem
 } from "./sevenShadowSystem";
 export { runCli } from "./cli";
+export { runDashboardCommand } from "./commands/dashboard";
 export { bitbucketProvider } from "./providers/bitbucket";
 export { bitbucketServerStub } from "./providers/bitbucket-server.stub";
 export { githubProvider } from "./providers/github";
@@ -47,7 +48,13 @@ export type {
   SentinelFailureJob,
   SentinelFailureRun,
   SentinelFailureStep,
+  SentinelListNotificationsRequest,
+  SentinelListOpenPullRequestsRequest,
+  SentinelListPullRequestFilesRequest,
   SentinelListFailureRunsRequest,
+  SentinelNotification,
+  SentinelPullRequestFile,
+  SentinelPullRequestSummary,
   SentinelProviderAdapter,
   SentinelRepositoryRef,
   SentinelResolvePullRequestOptions,
@@ -55,6 +62,14 @@ export type {
   ProviderTargetExtractionResult,
   PullContext
 } from "./providers/types";
+export type {
+  SentinelDashboardError,
+  SentinelDashboardMeta,
+  SentinelDashboardMode,
+  SentinelDashboardSection,
+  SentinelDashboardSnapshot,
+  SentinelDashboardStatus
+} from "./dashboard/types";
 export type {
   PolicyBundle,
   PolicyBundleSignature,
