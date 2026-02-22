@@ -65,19 +65,26 @@ async function seedSubmoduleSkeleton(targetRepo: string, submodulePath: string):
     "templates/submodule/policy-bundle-quickstart.md",
     path.join(root, "templates", "submodule", "policy-bundle-quickstart.md")
   );
+  await copyFixture(
+    "templates/submodule/readme-protection-block.md",
+    path.join(root, "templates", "submodule", "readme-protection-block.md")
+  );
 }
 
 async function runWireSubmodule(args: string[]): Promise<CommandResult> {
   return runCommand("bash", ["scripts/wire-submodule.sh", ...args], process.cwd());
 }
 
-test("wire-submodule default mode keeps existing baseline behavior", async () => {
+test("wire-submodule default mode keeps baseline behavior and injects README protection block", async () => {
   const tempDir = await makeTempDir();
 
   try {
     const repoPath = await initTargetRepo(tempDir);
     const submodulePath = "governance/seven-shadow-system";
     await seedSubmoduleSkeleton(repoPath, submodulePath);
+    const readmePath = path.join(repoPath, "README.md");
+    const initialReadme = "# Target Repo\n\nIntro text.\n";
+    await fs.writeFile(readmePath, initialReadme, "utf8");
 
     const result = await runWireSubmodule([repoPath, submodulePath]);
     assert.equal(result.code, 0, result.stderr);
@@ -88,6 +95,19 @@ test("wire-submodule default mode keeps existing baseline behavior", async () =>
     await assert.rejects(() => fs.access(path.join(repoPath, ".seven-shadow", "policy-trust-store.json")));
     await assert.rejects(() => fs.access(path.join(repoPath, ".seven-shadow", "policy.bundle.template.json")));
     await assert.rejects(() => fs.access(path.join(repoPath, ".seven-shadow", "policy-bundle-quickstart.md")));
+
+    const readme = await fs.readFile(readmePath, "utf8");
+    assert.match(readme, /Intro text\./);
+    assert.match(readme, /Protected by the \[Seven Shadows\]/);
+    assert.match(readme, /https:\/\/github\.com\/VontaJamal\/shadow-vault/);
+
+    const secondRun = await runWireSubmodule([repoPath, submodulePath]);
+    assert.equal(secondRun.code, 0, secondRun.stderr);
+    const secondReadme = await fs.readFile(readmePath, "utf8");
+    const marker = "seven-shadow-system:protection-block:start";
+    const markerCount = secondReadme.split(marker).length - 1;
+    assert.equal(markerCount, 1);
+    assert.match(secondReadme, /Intro text\./);
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true });
   }
@@ -142,6 +162,29 @@ test("wire-submodule supports trust store version 2 and validates flag usage", a
     const invalidResult = await runWireSubmodule(["--trust-store-version", "1", repoPath, submodulePath]);
     assert.equal(invalidResult.code, 1);
     assert.match(`${invalidResult.stdout}\n${invalidResult.stderr}`, /--trust-store-version is only valid when --with-bundle-trust is set/);
+  } finally {
+    await fs.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("wire-submodule --skip-readme-badge keeps existing README untouched", async () => {
+  const tempDir = await makeTempDir();
+
+  try {
+    const repoPath = await initTargetRepo(tempDir);
+    const submodulePath = "governance/seven-shadow-system";
+    await seedSubmoduleSkeleton(repoPath, submodulePath);
+
+    const readmePath = path.join(repoPath, "README.md");
+    const initialReadme = "# Target Repo\n\nNo managed footer yet.\n";
+    await fs.writeFile(readmePath, initialReadme, "utf8");
+
+    const result = await runWireSubmodule(["--skip-readme-badge", repoPath, submodulePath]);
+    assert.equal(result.code, 0, result.stderr);
+
+    const readme = await fs.readFile(readmePath, "utf8");
+    assert.equal(readme, initialReadme);
+    assert.doesNotMatch(readme, /Protected by the \[Seven Shadows\]/);
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true });
   }

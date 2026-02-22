@@ -9,6 +9,7 @@ Seven Shadow System is designed for idempotent submodule-first integration.
 - `.seven-shadow/policy.bundle.json` (optional signed policy bundle)
 - `.seven-shadow/policy-trust-store.json` (optional trust store for bundle verification)
 - `.github/workflows/seven-shadow-system.yml` (consumer enforcement workflow)
+- `README.md` protection footer (`Protected by the Seven Shadows` + `Explore the Vault`)
 
 ## Install
 
@@ -32,6 +33,12 @@ Optional overwrite of existing workflow template:
 
 ```bash
 ./scripts/wire-submodule.sh --force /absolute/path/to/consumer-repo
+```
+
+Optional skip of README footer management:
+
+```bash
+./scripts/wire-submodule.sh --skip-readme-badge /absolute/path/to/consumer-repo
 ```
 
 ## Consumer Workflow Trigger
