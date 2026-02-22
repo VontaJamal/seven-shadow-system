@@ -4,6 +4,18 @@ Seven Shadow System is an open-source AI review guard for maintainers.
 
 It helps you detect and govern AI-influenced review content in pull requests and comments.
 
+## The Seven Shadows
+
+| Shadow | Domain |
+| --- | --- |
+| Aesthetics | Keep product surfaces clear, consistent, and intentionally designed so maintainers can parse risk quickly. |
+| Security | Enforce trust boundaries, safe defaults, and strict token/input handling across all runtime paths. |
+| Access | Maintain WCAG-aligned output, keyboard-first interaction, and plain-language status communication. |
+| Testing | Prove behavior with deterministic unit, integration, and end-to-end coverage before release. |
+| Execution | Ship with clean-tree discipline, deterministic workflows, and CI-complete release hygiene. |
+| Scales | Bound processing and output sizes so runtime behavior remains predictable under load. |
+| Value | Prioritize changes that reduce maintainer toil, increase trust, or materially improve adoption. |
+
 ## Start Here (Beginner)
 
 You do not need to know Animate, advanced governance systems, or complicated CI tooling to start.
@@ -46,7 +58,7 @@ Sentinel Eye commands (GitHub-first in this phase):
 7s dashboard --repo owner/repo --limit 20
 ```
 
-Use **Settings** in the dashboard to configure shadow controls (Inbox, Patterns, Score, Digest/Execution) and apply them directly to Sentinel config.
+Use **Settings** in the dashboard to tune Inbox, Patterns, Scoring, and Processing Limits, then apply them directly to Sentinel config.
 
 Full command reference: `docs/sentinel-eye.md`
 Dashboard reference: `docs/sentinel-eye-dashboard.md`

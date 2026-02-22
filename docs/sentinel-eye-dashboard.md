@@ -36,20 +36,20 @@ Mode behavior:
 - mode control lives in Settings
 - last selected mode persists in browser local storage
 
-## Shadow Controls (Settings)
+## Triage Settings
 
-Open **Settings** (top-right) to configure shadow behavior directly in the GUI.
+Open **Settings** (top-right) to configure triage behavior directly in the GUI.
 
 Control groups:
 
-- **Inbox Shadow**: notifications scope enforcement + read/default behavior + notification bounds
-- **Patterns Shadow**: cluster threshold and title/path fingerprinting controls
-- **Score Shadow**: deterministic weight tuning for risk/trust ranking signals
-- **Digest + Execution Shadows**: digest cap and bounded processing limits
+- **Inbox**: notifications scope enforcement + read/default behavior + notification bounds
+- **Patterns**: cluster threshold and title/path fingerprinting controls
+- **Scoring**: deterministic weight tuning for risk/trust ranking signals
+- **Processing Limits**: digest cap and bounded processing limits
 
 Save behavior:
 
-- `Apply Shadow Controls` validates and writes canonical JSON to Sentinel config
+- `Apply Settings` validates and writes canonical JSON to Sentinel config
 - dashboard triggers refresh immediately after save
 - save/write failures are explicit and deterministic (no silent fallback)
 

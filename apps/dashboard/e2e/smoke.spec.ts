@@ -172,7 +172,17 @@ test("dashboard app renders triage suite", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Patterns" })).toBeVisible();
 
   await page.getByRole("button", { name: "Open dashboard settings" }).click();
-  await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Shadow Controls" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Apply Shadow Controls" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Settings", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Triage Settings" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Inbox" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Patterns" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Scoring" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Processing Limits" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Apply Settings" })).toBeVisible();
+  await expect(page.getByText("Shadow Controls")).toHaveCount(0);
+  await expect(page.getByText("Apply Shadow Controls")).toHaveCount(0);
+
+  await page.getByRole("radio", { name: /Sovereign/i }).click();
+  await expect(page.getByRole("heading", { name: "Triage Settings" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Apply Settings" })).toBeVisible();
 });

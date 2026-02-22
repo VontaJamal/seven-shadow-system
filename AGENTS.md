@@ -27,7 +27,7 @@ For UI/UX change proposals, agents must do all of the following before implement
 ## Seven Shadow Doctrine
 Every release candidate should uphold:
 1. Security
-2. Accessibility
+2. Access
 3. Testing
 4. Execution
 5. Scales

@@ -176,8 +176,21 @@ describe("App", () => {
 
     screen.getByRole("button", { name: "Open dashboard settings" }).click();
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Shadow Controls" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Apply Shadow Controls" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Triage Settings" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Inbox" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Patterns" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Scoring" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Processing Limits" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Apply Settings" })).toBeInTheDocument();
+      expect(screen.queryByText("Shadow Controls")).not.toBeInTheDocument();
+      expect(screen.queryByText("Apply Shadow Controls")).not.toBeInTheDocument();
+    });
+
+    screen.getByRole("radio", { name: /Sovereign/i }).click();
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Triage Settings" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Apply Settings" })).toBeInTheDocument();
     });
   });
 });

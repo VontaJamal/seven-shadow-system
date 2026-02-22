@@ -97,9 +97,10 @@ export function SettingsPanel(props: SettingsPanelProps): JSX.Element | null {
       </section>
 
       <section>
-        <h3>Shadow Controls</h3>
+        <h3>Triage Settings</h3>
         <p className="meta-line">
-          Configure deterministic Sentinel Eye behavior by shadow. Changes are saved to <code>{props.configState?.configPath ?? ".seven-shadow/sentinel-eye.json"}</code>.
+          Configure deterministic Sentinel Eye behavior with clear triage settings. Changes are saved to{" "}
+          <code>{props.configState?.configPath ?? ".seven-shadow/sentinel-eye.json"}</code>.
         </p>
         <p className="meta-line">Source: {props.configState?.source ?? "loading"} · Last saved: {formatTimestamp(props.configSavedAt)}</p>
       </section>
@@ -112,7 +113,7 @@ export function SettingsPanel(props: SettingsPanelProps): JSX.Element | null {
         <>
           <section className="settings-grid">
             <article className="settings-card">
-              <h4>Inbox Shadow</h4>
+              <h4>Inbox</h4>
               <label className="check-option" htmlFor="cfg-require-scope">
                 <input
                   id="cfg-require-scope"
@@ -186,7 +187,7 @@ export function SettingsPanel(props: SettingsPanelProps): JSX.Element | null {
             </article>
 
             <article className="settings-card">
-              <h4>Patterns Shadow</h4>
+              <h4>Patterns</h4>
               <label htmlFor="cfg-min-cluster-size">
                 Min cluster size (2-50)
                 <input
@@ -297,7 +298,7 @@ export function SettingsPanel(props: SettingsPanelProps): JSX.Element | null {
             </article>
 
             <article className="settings-card">
-              <h4>Score Shadow</h4>
+              <h4>Scoring</h4>
               <label htmlFor="cfg-weight-failures">
                 Weight: failing runs (0-100)
                 <input
@@ -456,7 +457,7 @@ export function SettingsPanel(props: SettingsPanelProps): JSX.Element | null {
             </article>
 
             <article className="settings-card">
-              <h4>Digest + Execution Shadows</h4>
+              <h4>Processing Limits</h4>
               <label htmlFor="cfg-max-digest-items">
                 Max digest items (1-100)
                 <input
@@ -597,7 +598,7 @@ export function SettingsPanel(props: SettingsPanelProps): JSX.Element | null {
                 Reset Draft
               </button>
               <button type="button" className="button" onClick={props.onSaveConfig} disabled={props.configBusy}>
-                {props.configBusy ? "Saving..." : "Apply Shadow Controls"}
+                {props.configBusy ? "Saving..." : "Apply Settings"}
               </button>
             </div>
           </section>

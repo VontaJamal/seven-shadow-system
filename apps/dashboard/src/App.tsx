@@ -239,7 +239,7 @@ export function App(): JSX.Element {
       {onboardingVisible ? (
         <section className="onboarding-callout" role="note">
           <p>
-            You are in <strong>Civilian</strong> mode. Use Settings to switch to Sovereign density when needed. Data and scoring stay deterministic in both profiles.
+            You are in <strong>Civilian</strong> mode. Use Settings to choose your preferred detail level. Data and scoring stay deterministic in both profiles.
           </p>
           <button
             type="button"

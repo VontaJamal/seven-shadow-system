@@ -7,7 +7,7 @@
 ## Seven Shadows Checklist
 
 - [ ] Security: No secrets/tokens added, auth and input boundaries reviewed.
-- [ ] Accessibility: CLI/docs/output changes preserve plain-language and readable structure.
+- [ ] Access: CLI/docs/output changes preserve plain-language and readable structure.
 - [ ] Testing: New behavior has tests; regressions are covered.
 - [ ] Execution: Scope is coherent, no debug leftovers/commented-out code.
 - [ ] Scales: Runtime/output bounds considered (size, loops, memory, CI volume).
@@ -21,10 +21,10 @@
 - [ ] `npm run validate:security-gates`
 - [ ] Additional checks run (if any):
 
-## Security and Accessibility Impact
+## Security and Access Impact
 
 - Security impact:
-- Accessibility impact:
+- Access impact:
 
 ## Rollout / Rollback
 

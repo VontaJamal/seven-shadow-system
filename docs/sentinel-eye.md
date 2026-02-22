@@ -172,8 +172,8 @@ Runtime API endpoints exposed by the dashboard server:
 - `GET /api/v1/dashboard/config`
 - `PUT /api/v1/dashboard/config`
 
-Dashboard settings now provide shadow control groups so maintainers can tune Inbox/Patterns/Score/Digest behavior without hand-editing JSON.
-Saved controls write canonical config to `.seven-shadow/sentinel-eye.json` (or `--config` path when provided).
+Dashboard settings now provide clear triage control groups so maintainers can tune Inbox/Patterns/Scoring/Processing Limits without hand-editing JSON.
+Saved settings write canonical config to `.seven-shadow/sentinel-eye.json` (or `--config` path when provided).
 
 ## Sentinel Eye Config
 
