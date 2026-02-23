@@ -120,7 +120,7 @@ jobs:
           sha256sum "$TARBALL" sbom.cdx.json seven-shadow-conformance-bundle.zip "${{ steps.provider_fixtures.outputs.bundle }}" > SHA256SUMS.txt
 
       - name: Install Cosign
-        uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382
+        uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad
 
       - name: Keyless sign SBOM and checksums
         run: |
