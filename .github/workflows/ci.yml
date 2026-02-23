@@ -21,14 +21,18 @@ jobs:
       - name: Verify DCO sign-off
         run: |
           set -euo pipefail
-          git fetch origin "${GITHUB_BASE_REF}" --depth=1
+          base_sha="${{ github.event.pull_request.base.sha }}"
+          head_sha="${{ github.event.pull_request.head.sha }}"
+          git fetch origin "${base_sha}" --depth=1
+          git fetch origin "${head_sha}" --depth=1
+
           missing=0
           while IFS= read -r commit; do
             if ! git show -s --format=%B "$commit" | grep -qi '^Signed-off-by:'; then
               echo "Missing Signed-off-by footer in commit: $commit"
               missing=1
             fi
-          done < <(git rev-list "origin/${GITHUB_BASE_REF}..HEAD")
+          done < <(git rev-list "${base_sha}..${head_sha}")
           if [[ "$missing" -ne 0 ]]; then
             echo "DCO check failed. Please amend commits with 'git commit --amend -s' or add sign-off on each commit."
             exit 1
