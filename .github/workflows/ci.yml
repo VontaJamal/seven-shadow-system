@@ -21,14 +21,18 @@ jobs:
       - name: Verify DCO sign-off
         run: |
           set -euo pipefail
-          git fetch origin "${GITHUB_BASE_REF}" --depth=1
+          base_sha="${{ github.event.pull_request.base.sha }}"
+          head_sha="${{ github.event.pull_request.head.sha }}"
+          git fetch origin "${base_sha}" --depth=1
+          git fetch origin "${head_sha}" --depth=1
+
           missing=0
           while IFS= read -r commit; do
             if ! git show -s --format=%B "$commit" | grep -qi '^Signed-off-by:'; then
               echo "Missing Signed-off-by footer in commit: $commit"
               missing=1
             fi
-          done < <(git rev-list "origin/${GITHUB_BASE_REF}..HEAD")
+          done < <(git rev-list "${base_sha}..${head_sha}")
           if [[ "$missing" -ne 0 ]]; then
             echo "DCO check failed. Please amend commits with 'git commit --amend -s' or add sign-off on each commit."
             exit 1
@@ -80,6 +84,27 @@ jobs:
 
       - name: Validate Security Gates
         run: npm run validate:security-gates
+
+  shadow-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+
+      - name: Setup Node
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install
+        run: npm ci
+
+      - name: Doctrine lint
+        run: npm run doctrine:lint -- --doctrine config/shadow-doctrine.sample.json --policy config/seven-shadow-system.policy.v3.sample.json --format json
+
+      - name: Run shadow gate on fixture event
+        run: npm run shadow:gate -- --policy config/seven-shadow-system.policy.v3.sample.json --doctrine config/shadow-doctrine.sample.json --event examples/pr_review_event.json --event-name pull_request_review --format json --no-color
 
   trust-rollout:
     runs-on: ubuntu-latest

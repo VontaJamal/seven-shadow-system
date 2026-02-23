@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "shadows": {
+    "Security": {
+      "name": "Security",
+      "belief": "Security is foundation, not polish.",
+      "doctrine": "Protect user data with explicit trust boundaries, validated inputs, and immediate remediation when risk is found.",
+      "principles": [
+        "Never hardcode secrets or credentials",
+        "Validate untrusted inputs at boundaries",
+        "Enforce server-side authorization",
+        "Document and patch security regressions immediately"
+      ],
+      "antiPatterns": [
+        "Trusting client-provided permissions",
+        "Shipping known vulnerabilities"
+      ],
+      "checkIntent": [
+        "secret hygiene",
+        "injection resistance",
+        "auth and trust boundary integrity"
+      ],
+      "remediationStyle": "Direct and fail-safe. Prioritize containment and explicit fixes."
+    },
+    "Access": {
+      "name": "Access",
+      "belief": "If someone cannot use it, it is not finished.",
+      "doctrine": "Accessibility ensures equal product access across screen readers, keyboard-only users, contrast needs, and focus navigation.",
+      "principles": [
+        "Keyboard-first usability for interactive flows",
+        "Accessible names and alt text for assistive tech",
+        "Adequate color contrast and visible focus",
+        "Semantic metadata and language correctness"
+      ],
+      "antiPatterns": [
+        "Color-only status communication",
+        "Unlabeled controls and inaccessible navigation"
+      ],
+      "checkIntent": [
+        "alt text presence",
+        "ARIA and labeling",
+        "keyboard navigation",
+        "contrast and focus visibility",
+        "screen reader compatibility"
+      ],
+      "remediationStyle": "Respect-first. Fix barriers with explicit user-path verification."
+    },
+    "Testing": {
+      "name": "Testing",
+      "belief": "Tests prove user behavior, not vanity metrics.",
+      "doctrine": "Prioritize integration and end-to-end confidence, mock external dependencies deterministically, and guard critical deterministic logic.",
+      "principles": [
+        "Prefer behavior-first assertions",
+        "Add regression tests for behavior changes",
+        "Use deterministic mocking for external dependencies",
+        "Use E2E coverage for critical workflows"
+      ],
+      "antiPatterns": [
+        "Snapshot-only confidence",
+        "Tests that hit live external APIs"
+      ],
+      "checkIntent": [
+        "behavior-level coverage",
+        "mock discipline",
+        "workflow confidence"
+      ],
+      "remediationStyle": "Evidence-based. Require tests that catch user-impacting failures."
+    },
+    "Execution": {
+      "name": "Execution",
+      "belief": "Quality is measured at the finish line.",
+      "doctrine": "Do not merge with unresolved blockers: red CI, unresolved critical review threads, or known broken checks.",
+      "principles": [
+        "Resolve blocking checks before merge",
+        "Close critical discussion loops",
+        "Preserve deterministic delivery hygiene"
+      ],
+      "antiPatterns": [
+        "Merging with known failures",
+        "Deferring critical breakage to future PRs"
+      ],
+      "checkIntent": [
+        "ci integrity",
+        "thread resolution",
+        "delivery readiness"
+      ],
+      "remediationStyle": "Finish-line discipline. Resolve blockers before shipment."
+    },
+    "Scales": {
+      "name": "Scales",
+      "belief": "Right-size now, preserve growth paths.",
+      "doctrine": "Avoid over-engineering and hard ceilings by keeping systems modular and proportionate to present load.",
+      "principles": [
+        "Match complexity to current requirements",
+        "Preserve modular boundaries",
+        "Control blast radius in large changes"
+      ],
+      "antiPatterns": [
+        "Premature distributed complexity",
+        "Monolithic coupling that prevents independent scaling"
+      ],
+      "checkIntent": [
+        "blast radius",
+        "coupling risk",
+        "scaling pathway health"
+      ],
+      "remediationStyle": "Architectural pragmatism with explicit growth safeguards."
+    },
+    "Value": {
+      "name": "Value",
+      "belief": "No value, no ship.",
+      "doctrine": "Every change must produce user or product value with explicit rationale, not low-signal churn.",
+      "principles": [
+        "Tie changes to outcomes",
+        "Eliminate duplicate/no-value additions",
+        "Keep cognitive load proportional to value"
+      ],
+      "antiPatterns": [
+        "Generic low-effort review content",
+        "Feature additions with no outcome rationale"
+      ],
+      "checkIntent": [
+        "signal quality",
+        "intent clarity",
+        "user/product outcome evidence"
+      ],
+      "remediationStyle": "Outcome-focused. Require specific impact and rationale."
+    },
+    "Aesthetics": {
+      "name": "Aesthetics",
+      "belief": "Visual quality signals engineering quality.",
+      "doctrine": "Shipped UI must be responsive, cohesive, and aligned with agreed design-system conventions.",
+      "principles": [
+        "Protect responsive integrity",
+        "Align with design-system language",
+        "Preserve visual consistency on touched surfaces"
+      ],
+      "antiPatterns": [
+        "Mobile breakage accepted as minor",
+        "Design-system drift"
+      ],
+      "checkIntent": [
+        "responsive behavior",
+        "design-system coherence",
+        "style consistency"
+      ],
+      "remediationStyle": "Cohesion-first. Fix visual regressions and restore intentional UI quality."
+    }
+  }
+}

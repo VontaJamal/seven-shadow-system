@@ -187,6 +187,8 @@ async function run(): Promise<void> {
     checkScores.set(check.name, score);
   }
 
+  const availableChecks = [...checkScores.keys()].sort((a, b) => a.localeCompare(b));
+
   const failures: string[] = [];
 
   if (overallScore < config.scorecard.minimumScore) {
@@ -199,7 +201,9 @@ async function run(): Promise<void> {
     const actual = checkScores.get(checkName);
 
     if (actual === undefined) {
-      failures.push(`required check '${checkName}' missing from scorecard results`);
+      failures.push(
+        `required check '${checkName}' missing from scorecard results (available: ${availableChecks.join(", ") || "<none>"})`
+      );
       continue;
     }
 

@@ -6,6 +6,9 @@ export {
 } from "./sevenShadowSystem";
 export { runCli } from "./cli";
 export { runDashboardCommand } from "./commands/dashboard";
+export { runDoctrineCommand } from "./commands/doctrine";
+export { runDoctrineLintCommand } from "./commands/doctrineLint";
+export { buildShadowGateReport, runShadowGateCommand } from "./commands/shadowGate";
 export { bitbucketProvider } from "./providers/bitbucket";
 export { bitbucketServerStub } from "./providers/bitbucket-server.stub";
 export { githubProvider } from "./providers/github";
@@ -28,6 +31,13 @@ export {
   verifyPolicyBundleWithTrustStore,
   verifyPolicyBundle
 } from "./policyGovernance";
+export {
+  evaluateShadowGate,
+  parseShadowDoctrine,
+  parseShadowExceptions,
+  parseShadowPolicy,
+  renderShadowGateMarkdown
+} from "./shadows/engine";
 
 export type {
   AccessibilitySummary,
@@ -91,3 +101,15 @@ export type {
   PolicyTrustStoreV2,
   SigstoreAdapter
 } from "./policyGovernance";
+export type {
+  NormalizedShadowPolicy,
+  ShadowDecision,
+  ShadowDoctrine,
+  ShadowDomain,
+  ShadowDomainDecision,
+  ShadowDomainEvaluation,
+  ShadowEnforcementStage,
+  ShadowExceptionRecord,
+  ShadowFinding,
+  ShadowGateReportV3
+} from "./shadows/types";

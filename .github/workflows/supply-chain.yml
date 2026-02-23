@@ -27,17 +27,22 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
+      checks: read
       contents: read
+      issues: read
       pull-requests: read
       security-events: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
 
       - name: Scorecard Analysis
         uses: ossf/scorecard-action@4eaacf0543bb3f2c246792bd56e8cdeffafb205a
         with:
+          file_mode: git
           results_file: scorecard-results.json
           results_format: json
           publish_results: false
@@ -54,10 +59,26 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Summarize scorecard checks
+        run: |
+          node --input-type=module -e '
+          import { readFileSync } from "node:fs";
+
+          const raw = JSON.parse(readFileSync("scorecard-results.json", "utf8"));
+          const checks = Array.isArray(raw.checks) ? raw.checks : [];
+          const lines = checks
+            .map((check) => `${check.name ?? "<unknown>"}=${Number.isFinite(check.score) ? check.score : "n/a"}`)
+            .join("\n");
+
+          console.log("Detected scorecard checks:");
+          console.log(lines || "<none>");
+          '
+
       - name: Evaluate Scorecard Security Gate
         run: node dist/scripts/evaluate-scorecard.js --results scorecard-results.json --config config/security-gates.json
 
       - name: Upload scorecard artifact
+        if: always()
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
         with:
           name: scorecard-results

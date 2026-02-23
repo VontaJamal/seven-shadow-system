@@ -1,0 +1,25 @@
+{
+  "repository": {
+    "full_name": "acme/repo"
+  },
+  "pull_request": {
+    "number": 21,
+    "title": "Update dashboard controls",
+    "body": "UI update with missing alt text and missing aria label on an icon button.",
+    "changed_files": 5,
+    "additions": 90,
+    "deletions": 20,
+    "user": {
+      "login": "repo-owner",
+      "type": "User"
+    }
+  },
+  "review": {
+    "id": 81,
+    "body": "This introduces keyboard inaccessible behavior and insufficient color contrast.",
+    "user": {
+      "login": "reviewer-access",
+      "type": "User"
+    }
+  }
+}

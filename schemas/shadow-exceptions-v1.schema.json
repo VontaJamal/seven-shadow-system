@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rinshari.dev/seven-shadow-system/schemas/shadow-exceptions-v1.schema.json",
+  "title": "Seven Shadows Exceptions v1",
+  "oneOf": [
+    {
+      "type": "array",
+      "items": { "$ref": "#/$defs/exception" }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["exceptions"],
+      "properties": {
+        "exceptions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/exception" }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "exception": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["check", "reason", "expiresAt"],
+      "properties": {
+        "check": { "type": "string", "minLength": 1 },
+        "reason": { "type": "string", "minLength": 1 },
+        "expiresAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

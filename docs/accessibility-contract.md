@@ -11,6 +11,7 @@ This document defines minimum accessibility expectations for CLI, reports, and g
 - Markdown summary report readability.
 - SARIF result descriptions and remediation text.
 - Governance docs and setup instructions.
+- Shadow Gate CLI output readability (`7s shadow-gate`).
 
 ## Required Checks
 

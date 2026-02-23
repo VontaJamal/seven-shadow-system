@@ -8,6 +8,8 @@
     "cases/unsupported-event.json",
     "cases/oversized-event.json",
     "cases/approval-unverified.json",
-    "cases/regex-unsafe-policy.json"
+    "cases/regex-unsafe-policy.json",
+    "cases/shadow-access-block.json",
+    "cases/shadow-testing-whisper-warn.json"
   ]
 }

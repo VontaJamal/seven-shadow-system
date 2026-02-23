@@ -2,6 +2,42 @@
 
 All notable changes to Seven Shadow System are documented in this file.
 
+## 0.3.0-rc.8 - 2026-02-23
+
+### Added
+
+- Doctrine-first Seven Shadows v3 assets:
+  - `references/seven-shadow-doctrine.md` (full + quickstart doctrine)
+  - `schemas/shadow-doctrine-v1.schema.json`
+  - `config/shadow-doctrine.sample.json`
+  - `templates/agent-doctrine.yml`
+- Policy/report/exception schemas for Shadow Gate:
+  - `schemas/policy-v3.schema.json`
+  - `schemas/report-v3.schema.json`
+  - `schemas/shadow-exceptions-v1.schema.json`
+  - `config/seven-shadow-system.policy.v3.sample.json`
+  - `config/shadow-exceptions.sample.json`
+- New CLI commands:
+  - `7s doctrine`
+  - `7s doctrine-lint`
+  - `7s shadow-gate`
+- Shadow evaluator engine under `src/shadows/` with deterministic stage progression:
+  - `whisper -> oath -> throne`
+- Shadow Gate markdown/json report rendering with non-color-only status signaling.
+- New npm scripts:
+  - `doctrine`
+  - `doctrine:lint`
+  - `shadow:gate`
+- Conformance extension for Shadow Gate runner cases.
+- CI `shadow-gate` job for doctrine-policy linting and fixture execution.
+
+### Changed
+
+- Access shadow wording across active docs/template paths now targets accessibility semantics (keyboard, ARIA/labels, contrast, focus, screen-reader paths).
+- PR template now includes per-shadow evidence fields.
+- Submodule workflow template now runs doctrine-grade `shadow-gate`.
+- Schema validation script now validates doctrine/policy-v3/exceptions/report-v3 contracts.
+
 ## 0.3.0-rc.4 - 2026-02-22
 
 ### Changed
@@ -121,7 +157,7 @@ All notable changes to Seven Shadow System are documented in this file.
 ### Changed
 
 - Design-system submodule reference renamed from legacy path to `design/rinshari-eye`.
-- Canonical doctrine link updated to `https://github.com/VontaJamal/rinshari-eye`.
+- Canonical doctrine link updated to `https://github.com/rinshari-eye`.
 - Sentinel Eye docs and README command references expanded for maintainer triage workflows.
 - Sentinel output snapshot coverage extended to include patterns/inbox/score/digest markdown surfaces.
 

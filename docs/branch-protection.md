@@ -21,6 +21,7 @@ This guidance lists the required checks and review controls that keep policy enf
 - `CI / conformance`
 - `CI / provider-contract`
 - `CI / accessibility`
+- `CI / shadow-gate`
 - `Secret Scan / secret-scan`
 - `GitLab Smoke / smoke`
 - `Supply Chain / dependency-review`

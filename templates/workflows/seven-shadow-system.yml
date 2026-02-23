@@ -67,6 +67,23 @@ jobs:
             --report-format all \
             --redact
 
+      - name: Run Seven Shadows Doctrine Gate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          SHADOW_POLICY_PATH=".seven-shadow/policy.json"
+          if [[ ! -f "$SHADOW_POLICY_PATH" ]]; then
+            SHADOW_POLICY_PATH="governance/seven-shadow-system/config/seven-shadow-system.policy.v3.sample.json"
+          fi
+
+          node governance/seven-shadow-system/dist/src/cli.js shadow-gate \
+            --policy "$SHADOW_POLICY_PATH" \
+            --doctrine governance/seven-shadow-system/config/shadow-doctrine.sample.json \
+            --event "$GITHUB_EVENT_PATH" \
+            --event-name "$GITHUB_EVENT_NAME" \
+            --format md \
+            --no-color
+
       - name: Upload report
         if: always()
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808

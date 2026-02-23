@@ -1,4 +1,5 @@
 import type { SentinelFailureRun, SentinelUnresolvedComment } from "../providers/types";
+import type { ShadowGateReportV3 } from "../shadows/types";
 
 export type SentinelProviderName = "github" | "gitlab" | "bitbucket";
 
@@ -186,3 +187,5 @@ export interface SentinelDigestReport {
   topPriorities: SentinelScoredPullRequest[];
   topPatterns: SentinelPatternCluster[];
 }
+
+export type ShadowGateReport = ShadowGateReportV3;

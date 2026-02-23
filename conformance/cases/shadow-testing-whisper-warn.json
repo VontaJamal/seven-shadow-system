@@ -1,0 +1,13 @@
+{
+  "id": "shadow-testing-whisper-warn",
+  "description": "Shadow Gate warns (not blocks) for high testing findings at whisper stage.",
+  "runner": "shadow-gate",
+  "eventName": "pull_request_review",
+  "event": "events/testing-warn.json",
+  "policy": "policies/shadow-testing-whisper.json",
+  "doctrine": "../config/shadow-doctrine.sample.json",
+  "expectedDecision": "warn",
+  "expectedFindingCodes": [
+    "SHADOW_TESTING_COVERAGE_MISSING"
+  ]
+}

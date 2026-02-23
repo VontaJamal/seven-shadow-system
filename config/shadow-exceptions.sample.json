@@ -1,0 +1,9 @@
+{
+  "exceptions": [
+    {
+      "check": "SHADOW_ACCESS_A11Y_EVIDENCE_MISSING",
+      "reason": "Legacy component migration in progress; full accessibility proof tracked in follow-up issue #123.",
+      "expiresAt": "2026-12-31T23:59:59.000Z"
+    }
+  ]
+}

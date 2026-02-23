@@ -5,6 +5,7 @@ import path from "node:path";
 import Ajv2020 from "ajv/dist/2020";
 import addFormats from "ajv-formats";
 
+import { buildShadowGateReport } from "../src/commands/shadowGate";
 import { runSevenShadowSystem } from "../src/sevenShadowSystem";
 
 function loadJson(filePath: string): Promise<unknown> {
@@ -57,9 +58,42 @@ async function generateReportFixture(tempDir: string): Promise<string> {
   return reportPath;
 }
 
+async function generateShadowGateReportFixture(tempDir: string): Promise<string> {
+  const reportPath = path.join(tempDir, "shadow-report.json");
+  const policyPath = path.join(process.cwd(), "config", "seven-shadow-system.policy.v3.sample.json");
+  const doctrinePath = path.join(process.cwd(), "config", "shadow-doctrine.sample.json");
+  const eventPath = path.join(process.cwd(), "examples", "pr_review_event.json");
+
+  const { report } = await buildShadowGateReport(
+    [
+      "--policy",
+      policyPath,
+      "--doctrine",
+      doctrinePath,
+      "--event",
+      eventPath,
+      "--event-name",
+      "pull_request_review",
+      "--provider",
+      "github",
+      "--format",
+      "json",
+      "--no-color"
+    ],
+    { ...process.env, GITHUB_TOKEN: "" }
+  );
+
+  await fs.writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
+  return reportPath;
+}
+
 async function run(): Promise<void> {
   const policySchemaPath = path.join(process.cwd(), "schemas", "policy-v2.schema.json");
+  const policyV3SchemaPath = path.join(process.cwd(), "schemas", "policy-v3.schema.json");
   const reportSchemaPath = path.join(process.cwd(), "schemas", "report-v2.schema.json");
+  const reportV3SchemaPath = path.join(process.cwd(), "schemas", "report-v3.schema.json");
+  const doctrineSchemaPath = path.join(process.cwd(), "schemas", "shadow-doctrine-v1.schema.json");
+  const exceptionsSchemaPath = path.join(process.cwd(), "schemas", "shadow-exceptions-v1.schema.json");
   const overrideConstraintsSchemaPath = path.join(process.cwd(), "schemas", "override-constraints-v1.schema.json");
   const trustStoreV1SchemaPath = path.join(process.cwd(), "schemas", "policy-trust-store-v1.schema.json");
   const trustStoreV2SchemaPath = path.join(process.cwd(), "schemas", "policy-trust-store-v2.schema.json");
@@ -67,6 +101,9 @@ async function run(): Promise<void> {
   const providerContractFixturesSchemaPath = path.join(process.cwd(), "schemas", "provider-contract-fixtures-v1.schema.json");
   const sentinelEyeSchemaPath = path.join(process.cwd(), "schemas", "sentinel-eye-v1.schema.json");
   const policyPath = path.join(process.cwd(), "config", "seven-shadow-system.policy.json");
+  const policyV3Path = path.join(process.cwd(), "config", "seven-shadow-system.policy.v3.sample.json");
+  const doctrinePath = path.join(process.cwd(), "config", "shadow-doctrine.sample.json");
+  const exceptionsPath = path.join(process.cwd(), "config", "shadow-exceptions.sample.json");
   const overrideConstraintsPath = path.join(process.cwd(), "config", "policy-override-constraints.json");
   const trustStoreV1Path = path.join(process.cwd(), "config", "policy-trust-store.sample.json");
   const trustStoreV2Path = path.join(process.cwd(), "config", "policy-trust-store.v2.sample.json");
@@ -96,6 +133,14 @@ async function run(): Promise<void> {
   const sentinelEyeSamplePath = path.join(process.cwd(), "config", "sentinel-eye.sample.json");
 
   await validateSchemaInstance(policySchemaPath, policyPath, "policy-v2.schema.json", "config/seven-shadow-system.policy.json");
+  await validateSchemaInstance(policyV3SchemaPath, policyV3Path, "policy-v3.schema.json", "config/seven-shadow-system.policy.v3.sample.json");
+  await validateSchemaInstance(doctrineSchemaPath, doctrinePath, "shadow-doctrine-v1.schema.json", "config/shadow-doctrine.sample.json");
+  await validateSchemaInstance(
+    exceptionsSchemaPath,
+    exceptionsPath,
+    "shadow-exceptions-v1.schema.json",
+    "config/shadow-exceptions.sample.json"
+  );
   await validateSchemaInstance(
     overrideConstraintsSchemaPath,
     overrideConstraintsPath,
@@ -156,6 +201,8 @@ async function run(): Promise<void> {
   try {
     const reportPath = await generateReportFixture(tempDir);
     await validateSchemaInstance(reportSchemaPath, reportPath, "report-v2.schema.json", "generated GuardReportV2");
+    const shadowReportPath = await generateShadowGateReportFixture(tempDir);
+    await validateSchemaInstance(reportV3SchemaPath, shadowReportPath, "report-v3.schema.json", "generated ShadowGateReportV3");
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true });
   }

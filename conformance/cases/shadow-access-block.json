@@ -1,0 +1,13 @@
+{
+  "id": "shadow-access-block",
+  "description": "Shadow Gate blocks critical accessibility barriers at throne stage.",
+  "runner": "shadow-gate",
+  "eventName": "pull_request_review",
+  "event": "events/access-block.json",
+  "policy": "policies/shadow-access-throne.json",
+  "doctrine": "../config/shadow-doctrine.sample.json",
+  "expectedDecision": "block",
+  "expectedFindingCodes": [
+    "SHADOW_ACCESS_KEYBOARD_INACCESSIBLE"
+  ]
+}
