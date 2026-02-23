@@ -5,8 +5,9 @@
   "scorecard": {
     "minimumScore": 8,
     "perCheckMinimums": {
-      "Token-Permissions": 8,
-      "Code-Review": 8
+      "Dependency-Update-Tool": 8,
+      "SAST": 8,
+      "Token-Permissions": 8
     }
   }
 }
