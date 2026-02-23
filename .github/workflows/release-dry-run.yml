@@ -142,7 +142,7 @@ jobs:
         run: npm publish "${{ steps.pack.outputs.tarball }}" --dry-run --access public --tag "${{ steps.npm_dist_tag.outputs.dist_tag }}"
 
       - name: Upload dry-run artifacts
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: release-dry-run-artifacts
           path: |
