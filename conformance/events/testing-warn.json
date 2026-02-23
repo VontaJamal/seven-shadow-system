@@ -1,0 +1,25 @@
+{
+  "repository": {
+    "full_name": "acme/repo"
+  },
+  "pull_request": {
+    "number": 22,
+    "title": "Refactor API workflow",
+    "body": "Behavior change with no tests added and tests hit real API.",
+    "changed_files": 12,
+    "additions": 420,
+    "deletions": 55,
+    "user": {
+      "login": "repo-owner",
+      "type": "User"
+    }
+  },
+  "review": {
+    "id": 82,
+    "body": "No tests added for this behavior change.",
+    "user": {
+      "login": "reviewer-testing",
+      "type": "User"
+    }
+  }
+}

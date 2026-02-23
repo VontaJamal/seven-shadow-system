@@ -10,11 +10,32 @@ It helps you detect and govern AI-influenced review content in pull requests and
 | --- | --- |
 | Aesthetics | Keep product surfaces clear, consistent, and intentionally designed so maintainers can parse risk quickly. |
 | Security | Enforce trust boundaries, safe defaults, and strict token/input handling across all runtime paths. |
-| Access | Maintain WCAG-aligned output, keyboard-first interaction, and plain-language status communication. |
+| Access | Enforce accessibility for all users: keyboard navigation, screen-reader semantics, contrast, focus visibility, and usable structure. |
 | Testing | Prove behavior with deterministic unit, integration, and end-to-end coverage before release. |
 | Execution | Ship with clean-tree discipline, deterministic workflows, and CI-complete release hygiene. |
 | Scales | Bound processing and output sizes so runtime behavior remains predictable under load. |
 | Value | Prioritize changes that reduce maintainer toil, increase trust, or materially improve adoption. |
+
+## Doctrine-First V3
+
+Seven Shadows Doctrine v3 introduces an explicit doctrine contract and a dedicated gate command:
+
+- Narrative doctrine: `references/seven-shadow-doctrine.md`
+- Machine doctrine schema: `schemas/shadow-doctrine-v1.schema.json`
+- Doctrine sample: `config/shadow-doctrine.sample.json`
+- Policy v3 schema: `schemas/policy-v3.schema.json`
+- Shadow Gate report schema: `schemas/report-v3.schema.json`
+- Exceptions schema: `schemas/shadow-exceptions-v1.schema.json`
+
+### New commands
+
+```bash
+7s doctrine --quickstart
+7s doctrine-lint --doctrine config/shadow-doctrine.sample.json --policy config/seven-shadow-system.policy.v3.sample.json
+7s shadow-gate --policy config/seven-shadow-system.policy.v3.sample.json --doctrine config/shadow-doctrine.sample.json --event examples/pr_review_event.json --event-name pull_request_review
+```
+
+Stage progression for Shadow Gate: `whisper -> oath -> throne`.
 
 ## Start Here (Beginner)
 
@@ -42,6 +63,16 @@ Guard mode remains backward compatible:
 ```bash
 seven-shadow-system --policy config/seven-shadow-system.policy.json --event examples/pr_review_event.json --event-name pull_request_review
 7s guard --policy config/seven-shadow-system.policy.json --event examples/pr_review_event.json --event-name pull_request_review
+```
+
+Shadow Gate (doctrine-grade review) with policy v3:
+
+```bash
+7s shadow-gate \
+  --policy config/seven-shadow-system.policy.v3.sample.json \
+  --doctrine config/shadow-doctrine.sample.json \
+  --event examples/pr_review_event.json \
+  --event-name pull_request_review
 ```
 
 Sentinel Eye commands (GitHub-first in this phase):
@@ -123,10 +154,13 @@ Skip README footer injection if a consumer needs custom docs handling:
 Main policy file:
 
 - `config/seven-shadow-system.policy.json`
+- `config/seven-shadow-system.policy.v3.sample.json` (doctrine-grade stage/risk controls)
 
 Consumer repos usually copy policy to:
 
 - `.seven-shadow/policy.json`
+
+Mac-first canonical documentation paths use `/Users/.../seven-shadow-system/...` while runtime commands remain cross-platform via relative paths and Node path resolution.
 
 ## Foundation-First
 
@@ -162,7 +196,3 @@ You can:
 - Public repo model for community extension and reuse
 
 ---
-
-[Explore the Vault →](https://github.com/VontaJamal/shadow-vault)
-
-🏴‍☠️ [Sovereign](https://github.com/VontaJamal) — The Shadow Dominion.

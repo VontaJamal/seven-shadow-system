@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rinshari.dev/seven-shadow-system/schemas/report-v3.schema.json",
+  "title": "Seven Shadows Gate Report v3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "timestamp",
+    "provider",
+    "eventName",
+    "policyVersion",
+    "enforcementStage",
+    "decision",
+    "selectedDomains",
+    "targetsScanned",
+    "highestAiScore",
+    "findings",
+    "shadowDecisions",
+    "exceptionsApplied",
+    "accessibilitySummary"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 3 },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "provider": { "type": "string", "minLength": 1 },
+    "eventName": { "type": "string", "minLength": 1 },
+    "policyVersion": { "type": "integer", "enum": [2, 3] },
+    "enforcementStage": { "type": "string", "enum": ["whisper", "oath", "throne"] },
+    "decision": { "type": "string", "enum": ["pass", "warn", "block"] },
+    "selectedDomains": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["Security", "Access", "Testing", "Execution", "Scales", "Value", "Aesthetics"]
+      }
+    },
+    "targetsScanned": { "type": "integer", "minimum": 0 },
+    "highestAiScore": { "type": "number", "minimum": 0, "maximum": 1 },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/finding" }
+    },
+    "shadowDecisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["domain", "score", "decision", "findings", "rationale"],
+        "properties": {
+          "domain": {
+            "type": "string",
+            "enum": ["Security", "Access", "Testing", "Execution", "Scales", "Value", "Aesthetics"]
+          },
+          "score": { "type": "number", "minimum": 0, "maximum": 100 },
+          "decision": { "type": "string", "enum": ["pass", "warn", "block"] },
+          "findings": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/finding" }
+          },
+          "rationale": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "exceptionsApplied": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["check", "reason", "expiresAt", "domain"],
+        "properties": {
+          "check": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string", "minLength": 1 },
+          "expiresAt": { "type": "string", "format": "date-time" },
+          "domain": {
+            "type": "string",
+            "enum": ["Security", "Access", "Testing", "Execution", "Scales", "Value", "Aesthetics"]
+          }
+        }
+      }
+    },
+    "accessibilitySummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "plainLanguageDecision",
+        "statusWords",
+        "nonColorStatusSignals",
+        "screenReaderFriendly",
+        "cognitiveLoad"
+      ],
+      "properties": {
+        "plainLanguageDecision": { "type": "string", "minLength": 1 },
+        "statusWords": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pass", "warn", "block"],
+          "properties": {
+            "pass": { "type": "string", "minLength": 1 },
+            "warn": { "type": "string", "minLength": 1 },
+            "block": { "type": "string", "minLength": 1 }
+          }
+        },
+        "nonColorStatusSignals": { "type": "boolean" },
+        "screenReaderFriendly": { "type": "boolean" },
+        "cognitiveLoad": { "type": "string", "enum": ["low", "medium"] }
+      }
+    }
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["code", "domain", "severity", "message", "remediation", "effectiveDecision"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "domain": {
+          "type": "string",
+          "enum": ["Security", "Access", "Testing", "Execution", "Scales", "Value", "Aesthetics"]
+        },
+        "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+        "message": { "type": "string", "minLength": 1 },
+        "remediation": { "type": "string", "minLength": 1 },
+        "effectiveDecision": { "type": "string", "enum": ["warn", "block"] }
+      }
+    }
+  }
+}

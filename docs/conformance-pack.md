@@ -11,6 +11,11 @@ Core conformance pack:
 - `conformance/events/*.json`: input fixtures
 - `conformance/policies/*.json`: policy fixtures
 
+Case runners:
+
+- default `guard` runner
+- optional `shadow-gate` runner for doctrine-grade v3 evaluation
+
 Provider contract fixtures:
 
 - `conformance/provider-contract/manifest.json`: provider fixture index
@@ -57,6 +62,8 @@ Current provider fixtures:
 - `oversized-event`
 - `approval-unverified`
 - `regex-unsafe-policy`
+- `shadow-access-block`
+- `shadow-testing-whisper-warn`
 
 ## Release Distribution
 

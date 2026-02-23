@@ -19,6 +19,7 @@ Use these settings for `main` to enforce baseline quality:
 - `CI / conformance`
 - `CI / provider-contract`
 - `CI / accessibility`
+- `CI / shadow-gate`
 - `Secret Scan / secret-scan`
 - `GitLab Smoke / smoke`
 - `Supply Chain / dependency-review`

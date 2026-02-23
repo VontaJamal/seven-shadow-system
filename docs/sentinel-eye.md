@@ -4,6 +4,64 @@ Sentinel Eye extends Seven Shadow System with deterministic, agent-readable PR i
 
 ## Commands
 
+### `7s doctrine`
+
+Render Seven Shadows doctrine text or structured doctrine data.
+
+```bash
+7s doctrine --quickstart
+7s doctrine --format json --doctrine config/shadow-doctrine.sample.json
+```
+
+Flags:
+
+- `--quickstart`: output condensed doctrine view
+- `--format md|json`: output format (default: `md`)
+- `--doctrine <path>`: doctrine source path (markdown or json for `md`, json for `json`)
+
+### `7s doctrine-lint`
+
+Validate doctrine + policy compatibility before enforcing in CI.
+
+```bash
+7s doctrine-lint --doctrine config/shadow-doctrine.sample.json --policy config/seven-shadow-system.policy.v3.sample.json
+```
+
+Flags:
+
+- `--doctrine <path>`: machine doctrine path (json)
+- `--policy <path>`: policy path (v2 or v3)
+- `--format md|json`: output format (default: `md`)
+
+### `7s shadow-gate`
+
+Run doctrine-grade Seven Shadows evaluation with stage-aware enforcement.
+
+```bash
+7s shadow-gate \
+  --policy config/seven-shadow-system.policy.v3.sample.json \
+  --doctrine config/shadow-doctrine.sample.json \
+  --event examples/pr_review_event.json \
+  --event-name pull_request_review
+```
+
+Flags:
+
+- `--policy <path>`: policy file (v2 compatible, v3 recommended)
+- `--doctrine <path>`: doctrine json contract path
+- `--exceptions <path>`: optional temporary exceptions file
+- `--event <path>`: event payload json file
+- `--event-name <name>`: event name for provider extraction
+- `--provider github|gitlab|bitbucket`: provider name (default: `github`)
+- `--format md|json`: output format (default: `md`)
+- `--no-color`: disable ANSI color hints
+
+Stage progression:
+
+- `whisper`: advisory-first, block only critical security/runtime integrity findings
+- `oath`: block high + critical severities
+- `throne`: block medium + high + critical severities
+
 ### `7s comments`
 
 List unresolved PR review comments with deterministic `file:line` locations.

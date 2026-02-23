@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rinshari.dev/seven-shadow-system/schemas/shadow-doctrine-v1.schema.json",
+  "title": "Seven Shadows Doctrine v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "shadows"],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "shadows": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["Security", "Access", "Testing", "Execution", "Scales", "Value", "Aesthetics"],
+      "properties": {
+        "Security": { "$ref": "#/$defs/domain" },
+        "Access": { "$ref": "#/$defs/domain" },
+        "Testing": { "$ref": "#/$defs/domain" },
+        "Execution": { "$ref": "#/$defs/domain" },
+        "Scales": { "$ref": "#/$defs/domain" },
+        "Value": { "$ref": "#/$defs/domain" },
+        "Aesthetics": { "$ref": "#/$defs/domain" }
+      }
+    }
+  },
+  "$defs": {
+    "domain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "belief", "doctrine", "principles", "antiPatterns", "checkIntent", "remediationStyle"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "belief": {
+          "type": "string",
+          "minLength": 1
+        },
+        "doctrine": {
+          "type": "string",
+          "minLength": 1
+        },
+        "principles": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 5,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "antiPatterns": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "checkIntent": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "remediationStyle": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

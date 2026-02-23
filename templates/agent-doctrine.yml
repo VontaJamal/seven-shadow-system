@@ -1,0 +1,62 @@
+version: 1
+source: seven-shadows-doctrine-v3
+
+shadows:
+  security:
+    before_writing:
+      - "Never hardcode secrets, keys, tokens, or credentials"
+      - "Validate all untrusted input boundaries"
+      - "Enforce server-side authorization checks"
+    before_submitting:
+      - "Run security checks and dependency vulnerability review"
+      - "Confirm no trust-boundary regression on changed paths"
+
+  access:
+    before_writing:
+      - "Ensure keyboard-first interaction for all changed UI controls"
+      - "Add semantic labels/ARIA where needed for assistive tech"
+      - "Preserve visible focus and contrast accessibility"
+    before_submitting:
+      - "Verify alt text, ARIA labeling, and keyboard flow"
+      - "Verify screen-reader path viability and language metadata"
+
+  testing:
+    before_writing:
+      - "Prefer integration/E2E tests for user-visible behavior changes"
+      - "Use deterministic API mocking (MSW recommended)"
+      - "Use unit tests for critical deterministic logic"
+    before_submitting:
+      - "Confirm behavior-first tests were added for behavior changes"
+      - "Avoid snapshot-only confidence"
+
+  execution:
+    before_writing:
+      - "Keep implementation coherent and scoped"
+      - "Resolve critical discussion blockers before merge"
+    before_submitting:
+      - "CI must be green on required checks"
+      - "No known broken checks or unresolved blocker threads"
+
+  scales:
+    before_writing:
+      - "Right-size architecture to current need"
+      - "Avoid creating hard scaling ceilings"
+    before_submitting:
+      - "Document blast-radius and modularity decisions"
+      - "Avoid unnecessary complexity"
+
+  value:
+    before_writing:
+      - "Tie each change to user or product outcomes"
+      - "Avoid duplicate/no-value additions"
+    before_submitting:
+      - "PR summary must explain why this adds value"
+      - "Replace low-signal generic review text with evidence"
+
+  aesthetics:
+    before_writing:
+      - "Keep touched UI responsive and design-system aligned"
+      - "Maintain naming/style consistency"
+    before_submitting:
+      - "Verify responsive behavior on common breakpoints"
+      - "Resolve style/lint issues for touched surfaces"

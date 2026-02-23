@@ -203,3 +203,51 @@ The soak gate verifies:
 
 - replay output hash stability across GitHub/GitLab/Bitbucket fixtures
 - fail-closed provider approval behavior under missing token conditions (`GITHUB_TOKEN`, `GITLAB_TOKEN`, `BITBUCKET_TOKEN`)
+
+## 9) Doctrine-First Shadow Gate (Policy v3)
+
+Policy v3 adds doctrine-grade evaluation controls through `7s shadow-gate`.
+
+New schemas:
+
+- `schemas/policy-v3.schema.json`
+- `schemas/report-v3.schema.json`
+- `schemas/shadow-doctrine-v1.schema.json`
+- `schemas/shadow-exceptions-v1.schema.json`
+
+Sample configs:
+
+- `config/seven-shadow-system.policy.v3.sample.json`
+- `config/shadow-doctrine.sample.json`
+- `config/shadow-exceptions.sample.json`
+
+Runtime command:
+
+- `7s shadow-gate --policy <path> --doctrine <path> --event <path> --event-name <name> [--exceptions <path>] [--format md|json]`
+
+Doctrine tooling:
+
+- `7s doctrine` (full or quickstart render)
+- `7s doctrine-lint` (doctrine + policy compatibility checks)
+
+Enforcement stages:
+
+- `whisper`: advisory-first, only critical security/runtime integrity checks block
+- `oath`: `high` + `critical` block, lower severities warn
+- `throne`: `medium` + `high` + `critical` block, low warns
+
+Coverage selection mode:
+
+- `risk-ranked-auto` with deterministic size bands (`small`/`medium`/`large`) and domain count `1/2/3`
+- tie-break order defaults to `Security`, `Access`, `Testing`, `Execution`, `Scales`, `Value`, `Aesthetics`
+
+Access doctrine semantics:
+
+- Access is accessibility-focused (WCAG, keyboard, ARIA/labels, contrast, focus visibility, screen-reader usability)
+- Access is not a code-clarity/readability output category
+
+Temporary exceptions:
+
+- File format: `check`, `reason`, `expiresAt`
+- Expired exceptions are ignored automatically
+- Applied exceptions are included in report output for auditability

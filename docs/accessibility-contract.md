@@ -9,6 +9,7 @@ Accessibility is a release gate for Seven Shadow System output surfaces.
 - Markdown summary report readability.
 - SARIF result descriptions and remediation text.
 - Governance docs and setup instructions.
+- Shadow Gate CLI output readability (`7s shadow-gate`).
 
 ## Required Checks
 

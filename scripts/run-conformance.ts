@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
+import { buildShadowGateReport } from "../src/commands/shadowGate";
 import { runSevenShadowSystem } from "../src/sevenShadowSystem";
 
 type Decision = "pass" | "warn" | "block";
@@ -14,9 +15,12 @@ interface ConformanceManifest {
 interface ConformanceCase {
   id: string;
   description: string;
+  runner?: "guard" | "shadow-gate";
   eventName: string;
   event: string;
   policy: string;
+  doctrine?: string;
+  exceptions?: string;
   expectedDecision?: Decision;
   expectedFindingCodes?: string[];
   expectedErrorContains?: string;
@@ -24,6 +28,11 @@ interface ConformanceCase {
 }
 
 interface GuardReportLike {
+  decision: Decision;
+  findings: Array<{ code: string; remediation?: string }>;
+}
+
+interface ShadowGateReportLike {
   decision: Decision;
   findings: Array<{ code: string; remediation?: string }>;
 }
@@ -96,12 +105,27 @@ function parseCase(raw: unknown, filePath: string): ConformanceCase {
     throw new Error(`E_CONFORMANCE_CASE: ${filePath} githubToken must be a string`);
   }
 
+  if (raw.runner !== undefined && raw.runner !== "guard" && raw.runner !== "shadow-gate") {
+    throw new Error(`E_CONFORMANCE_CASE: ${filePath} has invalid runner`);
+  }
+
+  if (raw.doctrine !== undefined && (typeof raw.doctrine !== "string" || raw.doctrine.length === 0)) {
+    throw new Error(`E_CONFORMANCE_CASE: ${filePath} doctrine must be a non-empty string`);
+  }
+
+  if (raw.exceptions !== undefined && (typeof raw.exceptions !== "string" || raw.exceptions.length === 0)) {
+    throw new Error(`E_CONFORMANCE_CASE: ${filePath} exceptions must be a non-empty string`);
+  }
+
   return {
     id: raw.id as string,
     description: raw.description as string,
+    runner: (raw.runner as "guard" | "shadow-gate" | undefined) ?? "guard",
     eventName: raw.eventName as string,
     event: raw.event as string,
     policy: raw.policy as string,
+    doctrine: raw.doctrine as string | undefined,
+    exceptions: raw.exceptions as string | undefined,
     expectedDecision: expectedDecision as Decision | undefined,
     expectedFindingCodes: raw.expectedFindingCodes as string[] | undefined,
     expectedErrorContains: expectedErrorContains as string | undefined,
@@ -125,6 +149,8 @@ async function runCase(
   const eventPath = path.resolve(rootDir, parsedCase.event);
   const policyPath = path.resolve(rootDir, parsedCase.policy);
   const reportPath = path.join(tempDir, `${parsedCase.id}.report.json`);
+  const doctrinePath = parsedCase.doctrine ? path.resolve(rootDir, parsedCase.doctrine) : null;
+  const exceptionsPath = parsedCase.exceptions ? path.resolve(rootDir, parsedCase.exceptions) : null;
 
   const env: NodeJS.ProcessEnv = {
     ...process.env,
@@ -132,26 +158,59 @@ async function runCase(
   };
 
   try {
-    const originalLog = console.log;
-    console.log = () => {};
+    let report: GuardReportLike | ShadowGateReportLike;
 
-    try {
-      await runSevenShadowSystem(
-        [
-          "--policy",
-          policyPath,
-          "--event",
-          eventPath,
-          "--event-name",
-          parsedCase.eventName,
-          "--report",
-          reportPath,
-          "--redact"
-        ],
-        env
-      );
-    } finally {
-      console.log = originalLog;
+    if (parsedCase.runner === "shadow-gate") {
+      if (!doctrinePath) {
+        throw new Error(`E_CONFORMANCE_CASE: ${casePath} requires doctrine when runner=shadow-gate`);
+      }
+
+      const args = [
+        "--policy",
+        policyPath,
+        "--doctrine",
+        doctrinePath,
+        "--event",
+        eventPath,
+        "--event-name",
+        parsedCase.eventName,
+        "--provider",
+        "github",
+        "--format",
+        "json",
+        "--no-color"
+      ];
+
+      if (exceptionsPath) {
+        args.push("--exceptions", exceptionsPath);
+      }
+
+      const result = await buildShadowGateReport(args, env);
+      report = result.report;
+    } else {
+      const originalLog = console.log;
+      console.log = () => {};
+
+      try {
+        await runSevenShadowSystem(
+          [
+            "--policy",
+            policyPath,
+            "--event",
+            eventPath,
+            "--event-name",
+            parsedCase.eventName,
+            "--report",
+            reportPath,
+            "--redact"
+          ],
+          env
+        );
+      } finally {
+        console.log = originalLog;
+      }
+
+      report = (await loadJson(reportPath)) as GuardReportLike;
     }
 
     if (parsedCase.expectedErrorContains) {
@@ -161,8 +220,6 @@ async function runCase(
         detail: `expected error containing '${parsedCase.expectedErrorContains}' but run succeeded`
       };
     }
-
-    const report = (await loadJson(reportPath)) as GuardReportLike;
 
     if (report.decision !== parsedCase.expectedDecision) {
       return {

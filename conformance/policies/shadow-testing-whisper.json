@@ -1,0 +1,90 @@
+{
+  "version": 3,
+  "enforcement": "block",
+  "blockBotAuthors": true,
+  "blockedAuthors": [],
+  "allowedAuthors": [],
+  "scanPrBody": true,
+  "scanReviewBody": true,
+  "scanCommentBody": true,
+  "maxAiScore": 0.95,
+  "disclosureTag": "[AI-ASSISTED]",
+  "disclosureRequiredScore": 0.99,
+  "runtime": {
+    "failOnUnsupportedEvent": true,
+    "failOnMalformedPayload": true,
+    "maxBodyChars": 12000,
+    "maxTargets": 25,
+    "maxEventBytes": 1000000
+  },
+  "report": {
+    "includeBodies": false,
+    "redactionMode": "hash"
+  },
+  "approvals": {
+    "minHumanApprovals": 0,
+    "fetchTimeoutMs": 10000,
+    "maxPages": 10,
+    "retry": {
+      "enabled": true,
+      "maxAttempts": 3,
+      "baseDelayMs": 250,
+      "maxDelayMs": 2500,
+      "jitterRatio": 0.2,
+      "retryableStatusCodes": [429, 500, 502, 503, 504]
+    }
+  },
+  "rules": [
+    {
+      "name": "explicit-ai-disclaimer",
+      "pattern": "as an ai language model",
+      "action": "block"
+    }
+  ],
+  "enforcementStage": "whisper",
+  "coveragePolicy": {
+    "selector": "risk-ranked-auto",
+    "sizeBands": {
+      "small": {
+        "maxLinesChanged": 250,
+        "maxFilesChanged": 20,
+        "domains": 1
+      },
+      "medium": {
+        "maxLinesChanged": 1200,
+        "maxFilesChanged": 60,
+        "domains": 2
+      },
+      "large": {
+        "domains": 3
+      }
+    },
+    "tieBreakOrder": [
+      "Testing",
+      "Security",
+      "Access",
+      "Execution",
+      "Scales",
+      "Value",
+      "Aesthetics"
+    ]
+  },
+  "shadowThresholds": {
+    "Security": { "warnAt": 20, "blockAt": 45 },
+    "Access": { "warnAt": 18, "blockAt": 42 },
+    "Testing": { "warnAt": 5, "blockAt": 10 },
+    "Execution": { "warnAt": 18, "blockAt": 40 },
+    "Scales": { "warnAt": 22, "blockAt": 50 },
+    "Value": { "warnAt": 16, "blockAt": 40 },
+    "Aesthetics": { "warnAt": 16, "blockAt": 40 }
+  },
+  "shadowRules": {
+    "Security": { "enabled": true, "checkSeverities": {} },
+    "Access": { "enabled": true, "checkSeverities": {} },
+    "Testing": { "enabled": true, "checkSeverities": {} },
+    "Execution": { "enabled": true, "checkSeverities": {} },
+    "Scales": { "enabled": true, "checkSeverities": {} },
+    "Value": { "enabled": true, "checkSeverities": {} },
+    "Aesthetics": { "enabled": true, "checkSeverities": {} }
+  }
+}

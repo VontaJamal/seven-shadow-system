@@ -97,6 +97,11 @@ test("runCli supports explicit guard and implicit guard modes", async () => {
   }
 });
 
+test("runCli dispatches doctrine command", async () => {
+  const code = await runCli(["doctrine", "--quickstart", "--doctrine", "config/shadow-doctrine.sample.json", "--format", "json"]);
+  assert.equal(code, 0);
+});
+
  test("runCli throws on unknown command", async () => {
   await assert.rejects(async () => {
     await runCli(["unknown-command"]);

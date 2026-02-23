@@ -1,11 +1,14 @@
 import { runCommentsCommand } from "./commands/comments";
 import { runDashboardCommand } from "./commands/dashboard";
 import { runDigestCommand } from "./commands/digest";
+import { runDoctrineCommand } from "./commands/doctrine";
+import { runDoctrineLintCommand } from "./commands/doctrineLint";
 import { runFailuresCommand } from "./commands/failures";
 import { runInboxCommand } from "./commands/inbox";
 import { runLintCommand } from "./commands/lint";
 import { runPatternsCommand } from "./commands/patterns";
 import { runScoreCommand } from "./commands/score";
+import { runShadowGateCommand } from "./commands/shadowGate";
 import { runTestQualityCommand } from "./commands/testQuality";
 import { runSevenShadowSystem } from "./sevenShadowSystem";
 
@@ -24,6 +27,9 @@ function renderHelp(): string {
     "  7s score [--pr N] [--repo owner/repo] [--provider github|gitlab|bitbucket] [--limit N] [--format md|json] [--config path]",
     "  7s digest [--repo owner/repo] [--provider github|gitlab|bitbucket] [--limit N] [--all] [--format md|json] [--config path]",
     "  7s dashboard [--repo owner/repo] [--provider github|gitlab|bitbucket] [--limit N] [--config path] [--host 127.0.0.1|0.0.0.0] [--port N] [--refresh-sec N] [--open] [--no-open]",
+    "  7s doctrine [--quickstart] [--format md|json] [--doctrine path]",
+    "  7s doctrine-lint [--doctrine path] [--policy path] [--format md|json]",
+    "  7s shadow-gate [--policy path] [--doctrine path] [--exceptions path] [--event path] [--event-name name] [--format md|json]",
     "",
     "Backward compatibility:",
     "  seven-shadow-system --policy ... (implicit guard mode)",
@@ -99,6 +105,18 @@ export async function runCli(
     return runDashboardCommand(rest, env);
   }
 
+  if (command === "doctrine") {
+    return runDoctrineCommand(rest, env);
+  }
+
+  if (command === "doctrine-lint") {
+    return runDoctrineLintCommand(rest, env);
+  }
+
+  if (command === "shadow-gate") {
+    return runShadowGateCommand(rest, env);
+  }
+
   throw new Error(`E_UNKNOWN_COMMAND: '${command}'. Use --help to view supported commands.`);
 }
 
@@ -112,6 +130,12 @@ if (require.main === module) {
 
       if (message.startsWith("E_SENTINEL_HELP:")) {
         process.stdout.write(`${message.replace(/^E_SENTINEL_HELP:\s*/, "")}\n`);
+        process.exitCode = 0;
+        return;
+      }
+
+      if (message.startsWith("E_SHADOW_HELP:")) {
+        process.stdout.write(`${message.replace(/^E_SHADOW_HELP:\s*/, "")}\n`);
         process.exitCode = 0;
         return;
       }
