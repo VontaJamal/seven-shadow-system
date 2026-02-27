@@ -149,7 +149,7 @@ jobs:
             SHA256SUMS.txt
 
       - name: Attest tarball provenance
-        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be
+        uses: actions/attest-build-provenance@96278af6caaf10aea03fd8d33a09a777ca52d62f
         with:
           subject-path: ${{ steps.pack.outputs.tarball }}
 
