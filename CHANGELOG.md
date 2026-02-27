@@ -2,6 +2,12 @@
 
 All notable changes to Seven Shadow System are documented in this file.
 
+## 0.3.0-rc.5 - 2026-02-27
+
+### Fixed
+
+- Added package metadata `repository.url` in `package.json` for npm provenance verification compatibility with GitHub Actions release attestations.
+
 ## 0.3.0-rc.8 - 2026-02-23
 
 ### Added
