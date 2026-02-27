@@ -20,6 +20,42 @@ This document is the release integrity checklist for signing, attestation, verif
 - `NPM_TOKEN`: npm token with publish access to `@rinshari/sss` and 2FA bypass enabled for CI publish.
 - `RELEASE_GPG_PUBLIC_KEY`: ASCII-armored public key used to verify signed tags.
 
+## Publish Troubleshooting
+
+### npm provenance publish fails with E422 repository metadata mismatch
+
+Symptom (from release workflow `Publish to npm with provenance` step):
+
+```text
+npm error code E422
+npm error 422 Unprocessable Entity - PUT https://registry.npmjs.org/@rinshari%2fsss
+Error verifying sigstore provenance bundle: Failed to validate repository information:
+package.json: "repository.url" is "", expected to match
+"https://github.com/VontaJamal/seven-shadow-system" from provenance
+```
+
+Cause:
+
+- `package.json` is missing `repository.url`, or the value does not match the GitHub repo that produced the provenance attestation.
+
+Fix:
+
+1. Set exact repository metadata in `package.json`:
+   - `"repository": { "type": "git", "url": "https://github.com/VontaJamal/seven-shadow-system" }`
+2. Merge that fix to `main`.
+3. Cut and push a new signed release tag (`v<package.json.version>`). Do not retag an existing release tag.
+
+Verification:
+
+- Release job passes both:
+  - `Publish to npm with provenance`
+  - `Publish GitHub release + checksums`
+- npm confirms published package version and dist-tag:
+
+```bash
+npm view @rinshari/sss version dist-tags --json
+```
+
 ## Pre-Release Gate
 
 `Release Dry Run / dry-run` must pass before cutting a release tag.
